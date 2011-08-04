@@ -1,6 +1,5 @@
 package org.apache.cassandra.contrib.fs.site;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,9 +17,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.thrift.transport.TTransportException;
 
-import antlr.StringUtils;
-
 public class CfsSiteServlet extends HttpServlet{
+	private static final long serialVersionUID = 1L;
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse resp)
@@ -41,7 +39,7 @@ public class CfsSiteServlet extends HttpServlet{
 		else if (action.equalsIgnoreCase("ls")){
 			//ls the file and get the attr
 			try {
-				List<Path> subs = CassandraFileSystem.getInstance().list(path);
+				List<Path> subs = CassandraFileSystem.getInstance(null).list(path);
 				outputPaths(resp,path,subs);
 				return;
 			} catch (TTransportException e) {
@@ -130,7 +128,7 @@ public class CfsSiteServlet extends HttpServlet{
 	
 	private void delete(String path) throws CfsSiteException{
 		try {
-			CassandraFileSystem.getInstance().deleteFile(path);
+			CassandraFileSystem.getInstance(null).deleteFile(path);
 		} catch (TTransportException e) {
 			throw CfsSiteException.fromTTransportException(e);
 		} catch (IOException e) {
@@ -155,7 +153,7 @@ public class CfsSiteServlet extends HttpServlet{
 			}
 		}
 		try {
-			CassandraFileSystem.getInstance().createFile(path, baos.toByteArray());
+			CassandraFileSystem.getInstance(null).createFile(path, baos.toByteArray());
 		} catch (TTransportException e) {
 			throw CfsSiteException.fromTTransportException(e);
 		} catch (IOException e) {
@@ -173,7 +171,7 @@ public class CfsSiteServlet extends HttpServlet{
 //				throw new CfsSiteException("NotExistFile",path);
 //			}
 			//output
-			IOUtils.copy(CassandraFileSystem.getInstance().readFile(path), stream);
+			IOUtils.copy(CassandraFileSystem.getInstance(null).readFile(path), stream);
 		} catch (TTransportException e) {
 			throw CfsSiteException.fromTTransportException(e);
 		} catch (IOException e) {

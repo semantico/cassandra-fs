@@ -33,20 +33,23 @@ public class CassandraFileSystem implements IFileSystem {
 
 	private byte[] buffer = new byte[FSConstants.BlockSize];
 
-	public static IFileSystem getInstance() throws TTransportException,
-			IOException {
+	public static IFileSystem getInstance(Configuration conf) throws TTransportException, IOException {
 		if (instance == null) {
 			synchronized (CassandraFileSystem.class) {
 				if (instance == null) {
-					instance = new CassandraFileSystem();
+					instance = new CassandraFileSystem(conf);
 				}
 			}
 		}
 		return instance;
 	}
+	
+	public static void dropInstance() {
+		instance = null;
+	}
 
-	private CassandraFileSystem() throws TTransportException, IOException {
-		this.facade = CassandraFacade.getInstance();
+	private CassandraFileSystem(Configuration conf) throws TTransportException, IOException {
+		this.facade = CassandraFacade.getInstance(conf);
 		if (!existDir("/")) {
 			mkdir("/");
 		}
@@ -65,11 +68,11 @@ public class CassandraFileSystem implements IFileSystem {
 			int to = ((i + 1) * FSConstants.BlockSize > content.length) ? content.length
 					: (i + 1) * FSConstants.BlockSize;
 			if (i == 0) {
-				facade.put(path, FSConstants.FileCF + ":"
+				facade.put(path, FSConstants.DefaultFileCF + ":"
 						+ FSConstants.ContentAttr, Arrays.copyOfRange(content,
 						from, to));
 			} else {
-				facade.put(path + "_$" + i, FSConstants.FileCF + ":"
+				facade.put(path + "_$" + i, FSConstants.DefaultFileCF + ":"
 						+ FSConstants.ContentAttr, Arrays.copyOfRange(content,
 						from, to));
 			}
@@ -83,7 +86,7 @@ public class CassandraFileSystem implements IFileSystem {
 				.format(new Date())));
 		map.put(Bytes.toBytes(FSConstants.OwnerAttr), FSConstants.DefaultOwner);
 		map.put(Bytes.toBytes(FSConstants.GroupAttr), FSConstants.DefaultGroup);
-		facade.batchPut(path, FSConstants.FileCF, null, map, false);
+		facade.batchPut(path, FSConstants.DefaultFileCF, null, map, false);
 
 		// add meta data for parent, except the Content
 		map = new HashMap<byte[], byte[]>();
@@ -95,7 +98,7 @@ public class CassandraFileSystem implements IFileSystem {
 		map.put(Bytes.toBytes(FSConstants.OwnerAttr), FSConstants.DefaultOwner);
 		map.put(Bytes.toBytes(FSConstants.GroupAttr), FSConstants.DefaultGroup);
 
-		facade.batchPut(parent, FSConstants.FolderCF, path, map, true);
+		facade.batchPut(parent, FSConstants.DefaultFolderCF, path, map, true);
 	}
 
 	public void createFile(String path, InputStream in) throws IOException {
@@ -118,10 +121,10 @@ public class CassandraFileSystem implements IFileSystem {
 			System.arraycopy(buffer, 0, content, 0, num);
 			length += num;
 			if (index == 0) {
-				facade.put(path, FSConstants.FileCF + ":"
+				facade.put(path, FSConstants.DefaultFileCF + ":"
 						+ FSConstants.ContentAttr, content);
 			} else {
-				facade.put(path + "_$" + index, FSConstants.FileCF + ":"
+				facade.put(path + "_$" + index, FSConstants.DefaultFileCF + ":"
 						+ FSConstants.ContentAttr, content);
 			}
 			index++;
@@ -133,7 +136,7 @@ public class CassandraFileSystem implements IFileSystem {
 				.format(new Date())));
 		map.put(Bytes.toBytes(FSConstants.OwnerAttr), FSConstants.DefaultOwner);
 		map.put(Bytes.toBytes(FSConstants.GroupAttr), FSConstants.DefaultGroup);
-		facade.batchPut(path, FSConstants.FileCF, null, map, false);
+		facade.batchPut(path, FSConstants.DefaultFileCF, null, map, false);
 
 		// add meta data for parent, except the Content
 		map = new HashMap<byte[], byte[]>();
@@ -144,7 +147,7 @@ public class CassandraFileSystem implements IFileSystem {
 		map.put(Bytes.toBytes(FSConstants.OwnerAttr), FSConstants.DefaultOwner);
 		map.put(Bytes.toBytes(FSConstants.GroupAttr), FSConstants.DefaultGroup);
 
-		facade.batchPut(parent, FSConstants.FolderCF, path, map, true);
+		facade.batchPut(parent, FSConstants.DefaultFolderCF, path, map, true);
 	}
 
 	public boolean deleteFile(String path) throws IOException {
@@ -160,7 +163,7 @@ public class CassandraFileSystem implements IFileSystem {
 		for (int i = 1; facade.exist(path + "_$" + i); ++i) {
 			facade.delete(path + "_$" + i);
 		}
-		facade.delete(parent, FSConstants.FolderCF, path);
+		facade.delete(parent, FSConstants.DefaultFolderCF, path);
 		return true;
 	}
 
@@ -181,7 +184,7 @@ public class CassandraFileSystem implements IFileSystem {
 			} else {
 				String parent = PathUtil.getParent(path);
 				facade.delete(path);
-				facade.delete(parent, FSConstants.FolderCF, path);
+				facade.delete(parent, FSConstants.DefaultFolderCF, path);
 				return true;
 			}
 		} else {
@@ -217,7 +220,7 @@ public class CassandraFileSystem implements IFileSystem {
 			mkdir(parent);
 		}
 
-		facade.put(path, FSConstants.FolderCF + ":" + FSConstants.FolderFlag
+		facade.put(path, FSConstants.DefaultFolderCF + ":" + FSConstants.DefaultFolderFlag
 				+ ":" + FSConstants.TypeAttr, Bytes.toBytes("Dummy"));
 		if (parent != null) {
 			Map<byte[], byte[]> map = new HashMap<byte[], byte[]>();
@@ -231,7 +234,7 @@ public class CassandraFileSystem implements IFileSystem {
 			map.put(Bytes.toBytes(FSConstants.GroupAttr),
 					FSConstants.DefaultGroup);
 
-			facade.batchPut(parent, FSConstants.FolderCF, path, map, true);
+			facade.batchPut(parent, FSConstants.DefaultFolderCF, path, map, true);
 		}
 		LOGGER.debug("Creat dir '" + path + "' succesfully");
 		return true;
@@ -242,9 +245,9 @@ public class CassandraFileSystem implements IFileSystem {
 		List<Path> result = new ArrayList<Path>();
 		path = PathUtil.normalizePath(path);
 		if (existDir(path)) {
-			result = facade.list(path, FSConstants.FolderCF, false);
+			result = facade.list(path, FSConstants.DefaultFolderCF, false);
 		} else if (existFile(path)) {
-			result = facade.list(path, FSConstants.FileCF, false);
+			result = facade.list(path, FSConstants.DefaultFileCF, false);
 		} else {
 			return result;
 		}
@@ -264,43 +267,23 @@ public class CassandraFileSystem implements IFileSystem {
 	public List<Path> listAll(String path) throws IOException {
 		PathUtil.checkPath(path);
 		path = PathUtil.normalizePath(path);
-		return facade.list(path, FSConstants.FolderCF, true);
+		return facade.list(path, FSConstants.DefaultFolderCF, true);
 	}
 
 	public boolean existDir(String path) throws IOException {
 		PathUtil.checkPath(path);
 		path = PathUtil.normalizePath(path);
-		return facade.list(path, FSConstants.FolderCF, true).size() != 0;
+		return facade.list(path, FSConstants.DefaultFolderCF, true).size() != 0;
 	}
 
 	public boolean existFile(String path) throws IOException {
 		PathUtil.checkPath(path);
 		path = PathUtil.normalizePath(path);
-		return facade.list(path, FSConstants.FileCF, true).size() != 0;
+		return facade.list(path, FSConstants.DefaultFileCF, true).size() != 0;
 	}
 
 	public boolean exist(String path) throws IOException {
 		return existDir(path) || existFile(path);
-	}
-
-	public static void main(String[] args) throws IOException,
-			TTransportException {
-		System.setProperty("storage-config", "conf");
-		IFileSystem fs = CassandraFileSystem.getInstance();
-		List<Path> children = fs.list("/data");
-		List<Path> files = new ArrayList<Path>();
-
-		// fs.mkdir("/data");
-		// System.out.println(fs.exist("/data"));
-		//		
-		// fs.deleteDir("/data",true);
-		// System.out.println(fs.exist("/data"));
-		// fs.createFile("/data/1.txt", Bytes.toBytes("hello world3"));
-		// System.out.println(fs.exist("/data"));
-		// System.out.println(fs.exist("/data/a.txt"));
-		// fs.deleteFile("/data/1.txt");
-		// System.out.println(fs.exist("/data/a.txt"));
-
 	}
 
 }

@@ -16,12 +16,10 @@ public class CFileInputStream extends InputStream {
 
 	private CassandraFacade facade;
 
-	public CFileInputStream(String path, CassandraFacade facade)
-			throws IOException {
+	public CFileInputStream(String path, CassandraFacade facade) throws IOException {
 		this.path = path;
 		this.facade = facade;
-		byte[] bytes = facade.get(path, FSConstants.FileCF + ":"
-				+ FSConstants.ContentAttr);
+		byte[] bytes = facade.get(path, FSConstants.DefaultFileCF + ":" + FSConstants.ContentAttr);
 		this.curBlockStream = new ByteArrayInputStream(bytes);
 		this.blockIndex++;
 	}
@@ -34,7 +32,7 @@ public class CFileInputStream extends InputStream {
 		} else {
 			try {
 				byte[] bytes = facade.get(path + "_$" + blockIndex++,
-						FSConstants.FileCF + ":" + FSConstants.ContentAttr);
+						FSConstants.DefaultFileCF + ":" + FSConstants.ContentAttr);
 				curBlockStream = new ByteArrayInputStream(bytes);
 				return curBlockStream.read();
 			} catch (IOException e) {

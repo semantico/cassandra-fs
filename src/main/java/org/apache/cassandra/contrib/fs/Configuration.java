@@ -7,29 +7,13 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-public class ClientConfiguration {
+public class Configuration {
 
-	private final static Logger LOGGER = Logger
-			.getLogger(ClientConfiguration.class);
+	private final static Logger LOGGER = Logger.getLogger(Configuration.class);
 
 	private Properties properties;
 
-//	private CassandraClientPoolByHost.ExhaustedPolicy defaultExhaustedPolicy = CassandraClientPoolByHost.ExhaustedPolicy.WHEN_EXHAUSTED_BLOCK;
-
-	private String defaultHosts = "localhost:9160";
-	
-	private String defaultReplicaPlacementStrategy = "org.apache.cassandra.locator.SimpleStrategy";
-	private int defaultReplicationFactor = 1;
-
-	private int defaultMaxActive = 10;
-
-	private int defaultMaxIdle = 10;
-
-	private int defaultMaxWaitTimeWhenExhausted = 60 * 1000;
-
-	private int defaultCassandraThriftSocketTimeout = 60 * 1000;
-
-	public ClientConfiguration(String propertyFile) throws IOException {
+	public Configuration(String propertyFile) throws IOException {
 		try {
 			properties = new Properties();
 			properties.load(new FileInputStream(propertyFile));
@@ -37,13 +21,21 @@ public class ClientConfiguration {
 			throw new IOException(e);
 		}
 	}
+	
+	/**
+	 * The properties object passed should not be modified post initialization of the Configuration object
+	 * @param customProperties a custom properties object
+	 */
+	public Configuration(Properties customProperties) {
+		this.properties = customProperties;
+	}
 
 	public String getHosts() {
 		String hosts = properties.getProperty(FSConstants.Hosts);
 		if (hosts == null) {
 			LOGGER.warn("'" + FSConstants.Hosts
 					+ "' is not provided, the default value will been used");
-			return defaultHosts;
+			return FSConstants.DefaultHosts;
 		} else {
 			return hosts;
 		}
@@ -54,7 +46,7 @@ public class ClientConfiguration {
 		if (maxActive == null) {
 			LOGGER.warn("'" + FSConstants.MaxActive
 					+ "' is not provided, the default value will been used");
-			return defaultMaxActive;
+			return FSConstants.DefaultMaxActive;
 		} else {
 			return Integer.parseInt(maxActive);
 		}
@@ -65,7 +57,7 @@ public class ClientConfiguration {
 		if (maxIdle == null) {
 			LOGGER.warn("'" + FSConstants.MaxIdle
 					+ "' is not provided, the default value will been used");
-			return defaultMaxIdle;
+			return FSConstants.DefaultMaxIdle;
 		} else {
 			return Integer.parseInt(maxIdle);
 		}
@@ -77,7 +69,7 @@ public class ClientConfiguration {
 		if (maxWaitTimeWhenExhausted == null) {
 			LOGGER.warn("'" + FSConstants.MaxWaitTimeWhenExhausted
 					+ "' is not provided, the default value will been used");
-			return defaultMaxWaitTimeWhenExhausted;
+			return FSConstants.DefaultMaxWaitTimeWhenExhausted;
 		} else {
 			return Integer.parseInt(maxWaitTimeWhenExhausted);
 		}
@@ -88,7 +80,7 @@ public class ClientConfiguration {
 		if (cassandraThriftSocketTimeout == null) {
 			LOGGER.warn("'" + FSConstants.CassandraThriftSocketTimeout
 					+ "' is not provided, the default value will been used");
-			return defaultCassandraThriftSocketTimeout;
+			return FSConstants.DefaultCassandraThriftSocketTimeout;
 		} else {
 			return Integer.parseInt(cassandraThriftSocketTimeout);
 		}
@@ -99,7 +91,7 @@ public class ClientConfiguration {
 		if (cassandraReplicaStrategyClass == null) {
 			LOGGER.warn("'" + FSConstants.ReplicaStrategyClass
 					+ "' is not provided, the default value will been used");
-			return defaultReplicaPlacementStrategy;
+			return FSConstants.DefaultReplicaPlacementStrategy;
 		} else {
 			return cassandraReplicaStrategyClass;
 		}
@@ -110,9 +102,27 @@ public class ClientConfiguration {
 		if (cassandraReplicationFactor == null) {
 			LOGGER.warn("'" + FSConstants.ReplicationFactor
 					+ "' is not provided, the default value will been used");
-			return defaultReplicationFactor;
+			return FSConstants.DefaultReplicationFactor;
 		} else {
 			return Integer.parseInt(cassandraReplicationFactor);
+		}
+	}
+	
+	public String getClusterName() {
+		String clusterName = properties.getProperty(FSConstants.ClusterName);
+		if(clusterName == null) {
+			return FSConstants.DefaultClusterName;
+		} else {
+			return clusterName;
+		}
+	}
+	
+	public String getKeyspace() {
+		String keyspace = properties.getProperty(FSConstants.KeySpace);
+		if(keyspace == null) {
+			return FSConstants.DefaultKeySpace;
+		} else {
+			return keyspace;
 		}
 	}
 
@@ -128,8 +138,4 @@ public class ClientConfiguration {
 //		}
 //	}
 
-	public static void main(String[] args) {
-		Properties prop = new Properties();
-		System.out.println(prop.getProperty("zjf"));
-	}
 }

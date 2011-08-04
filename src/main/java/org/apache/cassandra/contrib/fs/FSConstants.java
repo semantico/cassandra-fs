@@ -2,21 +2,53 @@ package org.apache.cassandra.contrib.fs;
 
 import org.apache.cassandra.contrib.fs.util.Bytes;
 
-
+/**
+ * This class has a mix of actual constants and values that can overwitten by Configuration
+ * TODO: needs som refactoring to remove defaults from Configuration and put them here
+ */
 public class FSConstants {
+	// ----------Property Keys---------------
+	
+	//client setup
+	public final static String Hosts = "cassandra.client.hosts";
+	public final static String ExhaustedPolicy = ""; //Unsupported
+	public final static String MaxActive = "cassandra.client.maxActive";
+	public final static String MaxIdle = "cassandra.client.maxIdle";
+	public final static String MaxWaitTimeWhenExhausted = "cassandra.client.maxWaitTimeWhenExhausted";
+	public final static String CassandraThriftSocketTimeout = "cassandra.client.cassandraThriftSocketTimeout";
+	public final static String ReplicaStrategyClass = "cassandra.client.replicaPlacementStrategy"; 
+	public final static String ReplicationFactor = "cassandra.client.replicationFactor";
+	
+	//cluster setup (should be consistent across nodes)
+	public final static String ClusterName = "cassandra.cluster.name";
+	public final static String KeySpace = "cassandra.cluster.keyspace";
+	/* shouldnt need to change
+	public final static String FolderCF = "cassandra.cluster.folderCF"; 
+	public final static String FileCF = "cassandra.cluster.fileCF"; 
+	public final static String FolderFlag = "cassandra.cluster.folderFlag"; 
+	*/
+	// -------------Defaults------------------
+	// cluster setup
+	public final static String DefaultHosts = "localhost:9160";
+	public final static String DefaultClusterName = "FS_Cluster";
+	public final static String DefaultKeySpace = "FS";
+	public final static String DefaultFolderCF = "Folder";
+	public final static String DefaultFileCF = "File";
+	public final static String DefaultFolderFlag = "$_Folder_$";
+	// client setup
+	public final static String DefaultReplicaPlacementStrategy = "org.apache.cassandra.locator.SimpleStrategy";
+	public final static int DefaultReplicationFactor = 1;
+	public final static int DefaultMaxActive = 10;
+	public final static int DefaultMaxIdle = 10;
+	public final static int DefaultMaxWaitTimeWhenExhausted = 60 * 1000;
+	public final static int DefaultCassandraThriftSocketTimeout = 60 * 1000;
 
-	// schema config
-	public final static String ClusterName = "FS_Cluster";
-	public final static String KeySpace = "FS";
-	public final static String FolderCF = "Folder";
-	public final static String FileCF = "File";
-	public final static String FolderFlag = "$_Folder_$";
-
+	
 	// attribute
 	public final static String TypeAttr = "Type"; // file or folder
-	public final static String ContentAttr = "Content";
-	public final static String LengthAttr = "Length";
-	public final static String LastModifyTime = "LastModifyTime";
+	public final static String ContentAttr = "Content"; //bytes
+	public final static String LengthAttr = "Length"; //long (size in bytes)
+	public final static String LastModifyTime = "LastModifyTime";//Time
 	public final static String OwnerAttr = "Owner";
 	public final static String GroupAttr = "Group";
 
@@ -28,15 +60,6 @@ public class FSConstants {
 	// size limitation
 	public final static int MaxFileSize = 500 * 1024 * 1024;
 	public final static int BlockSize = 5 * 1024 * 1024;
-	// client property
-	public final static String Hosts = "cassandra.client.hosts";
-	public final static String ExhaustedPolicy = "";
-	public final static String MaxActive = "cassandra.client.maxActive";
-	public final static String MaxIdle = "cassandra.client.maxIdle";
-	public final static String MaxWaitTimeWhenExhausted = "cassandra.client.maxWaitTimeWhenExhausted";
-	public final static String CassandraThriftSocketTimeout = "cassandra.client.cassandraThriftSocketTimeout";
+
 	
-	//CHANGED (New):
-	public final static String ReplicaStrategyClass = "cassandra.client.replicaPlacementStrategy"; 
-	public final static String ReplicationFactor = "cassandra.client.replicationFactor";
 }

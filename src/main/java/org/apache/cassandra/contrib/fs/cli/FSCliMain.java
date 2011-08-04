@@ -73,7 +73,7 @@ public class FSCliMain {
 	}
 
 	public void connect() throws TTransportException, IOException {
-		this.fs = CassandraFileSystem.getInstance();
+		this.fs = CassandraFileSystem.getInstance(null);
 		String os = System.getProperty("os.name");
 		if (os.toLowerCase().contains("windows")) {
 			this.curWorkingDir = "/usr/" + System.getenv("USERNAME");
