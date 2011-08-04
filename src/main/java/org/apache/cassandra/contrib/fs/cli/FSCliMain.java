@@ -28,6 +28,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.apache.thrift.transport.TTransportException;
 
 public class FSCliMain {
@@ -45,6 +47,7 @@ public class FSCliMain {
 	private PrintStream out = System.out;
 
 	public FSCliMain() throws IOException, TTransportException {
+		//this stuff was broken :>
 //		this.reader = new ConsoleReader(System.in, new OutputStreamWriter(System.out));
 //		ArgumentCompletor completor = new ArgumentCompletor(new Completor[] {
 //				new FSComamndCompletor(), new FSPathCompleter(this) });
@@ -132,9 +135,11 @@ public class FSCliMain {
 				out.println("Can not recognize command '" + cmd + "'");
 			}
 		} catch (IOException e) {
-			//System.err.println(tokens[0] + ":" + e.getLocalizedMessage());
-			e.printStackTrace();
-		} 
+			System.err.println(tokens[0] + ":" + e.getLocalizedMessage());
+			//e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			System.err.println(tokens[0] + ":" + e.getLocalizedMessage());
+		}
 	}
 
 	private void processCopyToHDFS(String[] tokens) throws IOException {
@@ -246,8 +251,9 @@ public class FSCliMain {
 	private void processCopyToLocal(String[] tokens)
 			throws FileNotFoundException, IOException {
 		if (tokens.length != 3) {
-			out.println("Usage: copyToLocal <source> <dest>");
+			out.println("Usage: copyToLocal <source> <dest>    paths cannot contain spaces");
 		} else {
+			
 			boolean fileExist = fs.existFile(decoratePath(tokens[1]));
 			boolean dirExist = fs.existDir(decoratePath(tokens[1]));
 			if (!fileExist && !dirExist) {
@@ -260,22 +266,16 @@ public class FSCliMain {
 						out.println("Local dest File '" + tokens[2]+ "' exist");
 					} else {
 						if (localDestFile.isFile()) {
-							IOUtils.copy(in,
-									new FileOutputStream(localDestFile));
+							IOUtils.copy(in, new FileOutputStream(localDestFile));
 						} else {
-							IOUtils.copy(in, new FileOutputStream(localDestFile
-									.getAbsolutePath()
-									+ "/"
-									+ new Path(decoratePath(tokens[1]))
-											.getName()));
+							IOUtils.copy(in, new FileOutputStream(localDestFile.getAbsolutePath()+ "/"+ new Path(decoratePath(tokens[1])).getName()));
 						}
 					}
-				} else { //cassandra-fs file dosent exist
+				} else { //cassandra-fs file dosent exist, so it must be a directory
 					File localFile = new File(decoratePath(tokens[2]));
 					if (localFile.exists() && localFile.list().length != 0) {
-						out.println("Local dest folder '" + tokens[2]
-								+ "' is not empty");
-					} else {
+						out.println("Local dest folder '"+ tokens[2]+ "' is not empty");
+					} else { //recursively copy the directory into local
 						localFile.mkdirs();
 						List<Path> paths = fs.list(decoratePath(tokens[1]));
 						for (Path path : paths) {
@@ -421,8 +421,7 @@ public class FSCliMain {
 		if (index == 0) {
 			return str1.substring(str2.length());
 		} else {
-			throw new RuntimeException("Can not subtract '" + str2 + "' from '"
-					+ str1 + "'");
+			throw new IllegalArgumentException("Can not subtract '" + str2 + "' from '" + str1 + "'");
 		}
 	}
 
@@ -480,7 +479,7 @@ public class FSCliMain {
 			} else if (index != -1) {
 				return curWorkingDir.substring(0, index);
 			} else {
-				throw new RuntimeException();
+				throw new IllegalArgumentException();
 			}
 		} else if (path.startsWith("/")) {
 			return path;
@@ -489,8 +488,7 @@ public class FSCliMain {
 		}
 	}
 
-	public static void main(String[] args) throws IOException,
-			TTransportException {
+	public static void main(String[] args) throws IOException, TTransportException {
 
 		FSCliMain cli = new FSCliMain();
 		cli.run();
