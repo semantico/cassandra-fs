@@ -44,7 +44,7 @@ public class CassandraFileSystem implements IFileSystem {
 		return instance;
 	}
 	
-	public static void dropInstance() {
+	public static void dropInstance() { // used for ensuring different keyspaces between tests
 		instance = null;
 	}
 

@@ -32,7 +32,7 @@ import me.prettyprint.hector.api.query.SubColumnQuery;
 import me.prettyprint.hector.api.query.SuperSliceQuery;
 
 public class CassandraFacade {
-	
+
 	private static Logger LOGGER = Logger.getLogger(CassandraFacade.class);
 	private static CassandraFacade instance;
 
@@ -53,47 +53,61 @@ public class CassandraFacade {
 		}
 		return instance;
 	}
-	
+
+	public static void dropInstance() {
+		instance = null;
+	}
+
 	private Cluster cluster;
-	private KeyspaceDefinition kspDef;
 	private Configuration conf;
 	private final StringSerializer stringSerializer = StringSerializer.get();
 	private final BytesArraySerializer byteSerializer = BytesArraySerializer.get();
 
 	private CassandraFacade(Configuration conf) throws IOException {
 		this.conf = conf;
-		cluster = HFactory.getOrCreateCluster(FSConstants.DefaultClusterName, new CassandraHostConfigurator(conf.getHosts()));
+		cluster = HFactory.getOrCreateCluster(conf.getClusterName(), new CassandraHostConfigurator(conf.getHosts()));
 
 		List<ColumnFamilyDefinition> cfDefs = new ArrayList<ColumnFamilyDefinition>();
 
 		{//FILE COLUMN FAMILY
 
-			ColumnFamilyDefinition fileCfDef = HFactory.createColumnFamilyDefinition(FSConstants.DefaultKeySpace, FSConstants.DefaultFileCF, ComparatorType.BYTESTYPE);
+			ColumnFamilyDefinition fileCfDef = HFactory.createColumnFamilyDefinition(conf.getKeyspace(), FSConstants.DefaultFileCF, ComparatorType.BYTESTYPE);
 			cfDefs.add(fileCfDef);
 		} 
 		{ //FOLDER COLUMN FAMILY
-			ThriftCfDef  folderCfDef = (ThriftCfDef) HFactory.createColumnFamilyDefinition(FSConstants.DefaultKeySpace, FSConstants.DefaultFolderCF, ComparatorType.UTF8TYPE);
+			ThriftCfDef  folderCfDef = (ThriftCfDef) HFactory.createColumnFamilyDefinition(conf.getKeyspace(), FSConstants.DefaultFolderCF, ComparatorType.UTF8TYPE);
 			//Need to downcast to Thrift in order to make a superColumnFamily definition. This is a known problem, but hector isnt being maintained officially anymore
 			folderCfDef.setColumnType(ColumnType.SUPER);
 			cfDefs.add(folderCfDef);
 		}
 
-		KeyspaceDefinition kspDescrip = cluster.describeKeyspace(FSConstants.DefaultKeySpace);
+		KeyspaceDefinition kspDescrip = cluster.describeKeyspace(conf.getKeyspace());
+		KeyspaceDefinition kspDef = HFactory.createKeyspaceDefinition(conf.getKeyspace(), conf.getReplicaPlacementStrategy(), conf.getReplicationFactor(), cfDefs);
 		if(kspDescrip == null) {
-			kspDef = HFactory.createKeyspaceDefinition(FSConstants.DefaultKeySpace, conf.getReplicaPlacementStrategy(), conf.getReplicationFactor(), cfDefs);
-		} else {
-			kspDef = kspDescrip;
-		}
 
-		if(cluster.describeKeyspace(kspDef.getName()) == null) {
 			cluster.addKeyspace(kspDef);
+		} else {
+			List<ColumnFamilyDefinition> cfs =kspDescrip.getCfDefs();
+			boolean hasFileFamily = false;
+			boolean hasFolderFamily = false;
+			for(ColumnFamilyDefinition cfDef : cfs) {
+				if(cfDef.getName().equals(FSConstants.DefaultFileCF)) {
+					hasFileFamily = true;
+				} else if(cfDef.getName().equals(FSConstants.DefaultFolderCF)) {
+					hasFolderFamily = true;
+				}
+			}
+			if(!hasFileFamily || !hasFolderFamily) {
+				cluster.dropKeyspace(conf.getKeyspace());
+				cluster.addKeyspace(kspDef);
+			}
 		}
 
 		if(cluster.describeKeyspace(kspDef.getName()) == null) {
 			throw new IOException("Error Initializing Keyspace");
 		}
 	}
-	
+
 	public Configuration getConf() {
 		return conf;
 	}
@@ -113,12 +127,12 @@ public class CassandraFacade {
 		}
 		return columnPath;
 	}
-	
+
 	public void put(String key, String column, byte[] value) throws IOException {
 		LOGGER.info("Hitting put");
 		try {
 			ColumnPath columnPath = extractColumnPath(column);
-			Mutator<String> mutator = HFactory.createMutator(HFactory.createKeyspace(kspDef.getName(), cluster), stringSerializer);
+			Mutator<String> mutator = HFactory.createMutator(HFactory.createKeyspace(conf.getKeyspace(), cluster), stringSerializer);
 
 			if(columnPath.isSetSuper_column()) {
 				LOGGER.info("- put into supercolumn of " + columnPath.getColumn_family());
@@ -135,7 +149,7 @@ public class CassandraFacade {
 				mutator.insert(key, columnPath.getColumn_family(), col);
 				LOGGER.info("- - column : name:"+ new String(columnPath.column.array()) + " key:" + key+" value:" + new String(value));
 			}
-			
+
 		} catch (Exception e) {
 			throw new IOException(e);
 		} 
@@ -144,8 +158,8 @@ public class CassandraFacade {
 	public void batchPut(String key, String cfName, String colName, Map<byte[], byte[]> map, boolean isSuperColumn) throws IOException {
 		LOGGER.info("Hitting batchPut");
 		try {
-			Keyspace ks = HFactory.createKeyspace(kspDef.getName(), cluster);
-			Mutator<String> mutator = HFactory.createMutator(HFactory.createKeyspace(kspDef.getName(), cluster), stringSerializer);
+			Keyspace ks = HFactory.createKeyspace(conf.getKeyspace(), cluster);
+			Mutator<String> mutator = HFactory.createMutator(HFactory.createKeyspace(conf.getKeyspace(), cluster), stringSerializer);
 
 			if (!isSuperColumn) {
 				LOGGER.info("- put into column of " + cfName);
@@ -179,7 +193,7 @@ public class CassandraFacade {
 		LOGGER.info("Hitting Get: Key:" + key + "  ColumnPath:"  + column);
 		try {
 			ColumnPath columnPath = extractColumnPath(column);
-			ks = HFactory.createKeyspace(kspDef.getName(), cluster);
+			ks = HFactory.createKeyspace(conf.getKeyspace(), cluster);
 			if (columnPath.isSetSuper_column() && columnPath.isSetColumn()){
 				SubColumnQuery<String, String, String, byte[]> query = HFactory.createSubColumnQuery(ks, stringSerializer, stringSerializer, stringSerializer, byteSerializer);
 				query.setColumnFamily(columnPath.getColumn_family());
@@ -215,7 +229,7 @@ public class CassandraFacade {
 	public void delete(String key) throws IOException {
 		Keyspace ks = null;
 		try {
-			ks = HFactory.createKeyspace(kspDef.getName(), cluster);
+			ks = HFactory.createKeyspace(conf.getKeyspace(), cluster);
 			Mutator<String> mutator = HFactory.createMutator(ks, stringSerializer);
 			mutator.addDeletion(key, FSConstants.DefaultFileCF);
 			mutator.addDeletion(key, FSConstants.DefaultFolderCF);
@@ -228,7 +242,7 @@ public class CassandraFacade {
 	public void delete(String key, String columnFamily, String superColumn) throws IOException {
 		Keyspace ks = null;
 		try {
-			ks = HFactory.createKeyspace(kspDef.getName(), cluster);
+			ks = HFactory.createKeyspace(conf.getKeyspace(), cluster);
 			Mutator<String> mutator = HFactory.createMutator(ks, stringSerializer);
 			mutator.addSuperDelete(key, columnFamily, superColumn, stringSerializer);
 			mutator.execute();
@@ -241,7 +255,7 @@ public class CassandraFacade {
 	public boolean exist(String key) throws IOException {
 		Keyspace ks = null;
 		try {
-			ks = HFactory.createKeyspace(kspDef.getName(), cluster);
+			ks = HFactory.createKeyspace(conf.getKeyspace(), cluster);
 
 			SubColumnQuery<String, String, String, byte[]> query = HFactory.createSubColumnQuery(ks, stringSerializer, stringSerializer, stringSerializer, byteSerializer);
 			query.setColumnFamily(FSConstants.DefaultFolderCF);
@@ -266,7 +280,7 @@ public class CassandraFacade {
 		} 
 
 		try {
-			ks = HFactory.createKeyspace(kspDef.getName(), cluster);
+			ks = HFactory.createKeyspace(conf.getKeyspace(), cluster);
 			ColumnQuery<String, String, byte[]> query = HFactory.createColumnQuery(ks, stringSerializer, stringSerializer, byteSerializer);
 			query.setColumnFamily(FSConstants.DefaultFileCF);
 			query.setName(FSConstants.ContentAttr + "_0");
@@ -295,7 +309,7 @@ public class CassandraFacade {
 		Keyspace ks = null;
 		try {
 			List<Path> children = new ArrayList<Path>();
-			ks = HFactory.createKeyspace(kspDef.getName(), cluster);
+			ks = HFactory.createKeyspace(conf.getKeyspace(), cluster);
 
 			if (columnFamily.equals(FSConstants.DefaultFolderCF)) {
 				SuperSliceQuery<String, String, String, byte[]> query = HFactory.createSuperSliceQuery(ks, stringSerializer, stringSerializer, stringSerializer, byteSerializer);
@@ -305,7 +319,7 @@ public class CassandraFacade {
 				query.setKey(key);
 
 				List<HSuperColumn<String, String, byte[]>> superCols = query.execute().get().getSuperColumns();
-				
+
 				for(HSuperColumn<String, String, byte[]> sc : superCols) {
 					String name = sc.getName();
 					List<HColumn<String, byte[]>> attributes = sc.getColumns();
@@ -323,9 +337,9 @@ public class CassandraFacade {
 				query.setKey(key);
 				//query.setColumnNames(""); //TODO:  ???
 				query.setRange("", "", false, Integer.MAX_VALUE); //TODO: see above
-				
+
 				List<HColumn<String, byte[]>> slice = query.execute().get().getColumns();
-				
+
 				if (slice.size() > 0) {
 					Path path = new Path(key, slice); 
 					children.add(path);
@@ -341,19 +355,19 @@ public class CassandraFacade {
 		} 
 	}
 
-		public Path listFile(String file) throws IOException {
-			Keyspace ks = null;
-			try {
-				ks = HFactory.createKeyspace(kspDef.getName(), cluster);
-				SliceQuery<String, String, byte[]> query = HFactory.createSliceQuery(ks, stringSerializer, stringSerializer, byteSerializer);
-				query.setColumnFamily(FSConstants.DefaultFileCF);
-				query.setKey(file);
-				query.setRange("", "", false, Integer.MAX_VALUE);
-				List<HColumn<String, byte[]>> columns = query.execute().get().getColumns();
-				
-				return new Path(file, columns);
-			} catch (Exception e) {
-				throw new IOException(e);
-			} 
-		}
+	public Path listFile(String file) throws IOException {
+		Keyspace ks = null;
+		try {
+			ks = HFactory.createKeyspace(conf.getKeyspace(), cluster);
+			SliceQuery<String, String, byte[]> query = HFactory.createSliceQuery(ks, stringSerializer, stringSerializer, byteSerializer);
+			query.setColumnFamily(FSConstants.DefaultFileCF);
+			query.setKey(file);
+			query.setRange("", "", false, Integer.MAX_VALUE);
+			List<HColumn<String, byte[]>> columns = query.execute().get().getColumns();
+
+			return new Path(file, columns);
+		} catch (Exception e) {
+			throw new IOException(e);
+		} 
+	}
 }
