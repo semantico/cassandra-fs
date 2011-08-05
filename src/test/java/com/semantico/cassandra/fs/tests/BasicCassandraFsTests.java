@@ -1,6 +1,7 @@
 package com.semantico.cassandra.fs.tests;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -122,10 +123,10 @@ public class BasicCassandraFsTests extends CassandraFsTest {
 
 	private void readWriteStreamFromLocalTest(String fileToTestWith) throws IOException {
 		fs.mkdir(path);
-		InputStream inputStream = new FileInputStream("src\\test\\resources\\" + fileToTestWith);
+		InputStream inputStream = new FileInputStream(new File("src/test/resources/" + fileToTestWith));
 		fs.createFile(path+fileToTestWith, inputStream);
 		inputStream.close();
-		inputStream = new FileInputStream("src\\test\\resources\\"+ fileToTestWith);
+		inputStream = new FileInputStream(new File("src/test/resources/"+ fileToTestWith));
 		assertTrue("File Was Not Copied Exactly", isStreamContentEqual(inputStream, fs.readFile(path+fileToTestWith)));
 	}
 

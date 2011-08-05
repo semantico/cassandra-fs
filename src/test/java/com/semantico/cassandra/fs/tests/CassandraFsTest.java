@@ -1,5 +1,6 @@
 package com.semantico.cassandra.fs.tests;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -25,7 +26,7 @@ public class CassandraFsTest extends CassandraTest {
 		CassandraFacade.dropInstance();
 		Properties properties = new Properties();
 		//TODO: is the right path or is a location maven copies them to for testing ?
-		properties.load(new FileInputStream("src\\test\\resources\\config.properties"));
+		properties.load(new FileInputStream(new File("src/test/resources/config.properties")));
 		properties.setProperty(FSConstants.KeySpace, keyspace.getKeyspaceName());
 		properties.setProperty(FSConstants.ClusterName, cluster.describeClusterName());
 		properties.setProperty(FSConstants.Hosts, "localhost:19160");
