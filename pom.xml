@@ -15,6 +15,16 @@
 		<relativePath>../sipp2-parent/pom.xml</relativePath>
 	</parent>
 
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>emma-maven-plugin</artifactId>
+				<version>1.0-alpha-3</version>
+			</plugin>
+		</plugins>
+	</reporting>
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.cassandra</groupId>

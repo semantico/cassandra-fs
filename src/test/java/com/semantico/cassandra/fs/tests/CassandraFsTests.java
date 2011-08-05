@@ -11,7 +11,7 @@ import org.apache.cassandra.contrib.fs.Path;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class BasicCassandraFsTests extends CassandraFsTest {
+public class CassandraFsTests extends CassandraFsTest {
 
 	private static final String path = "/testDirectory/";
 	private static final String nestedPath = "/testDirectory/nestedFolder/";
@@ -26,12 +26,25 @@ public class BasicCassandraFsTests extends CassandraFsTest {
 		fs.mkdir(path);
 		assertTrue(fs.existDir(path));
 	}
+	
+	@Test
+	public void makeMultipleDirsTest() throws IOException {
+		fs.mkdir(nestedPath); //non existant parent folders should be made too
+		assertTrue(fs.existDir(path));
+		assertTrue(fs.existDir(nestedPath));
+	}
 
 	@Test
 	public void makeFileTest() throws IOException {
 		fs.mkdir(path);
 		fs.createFile(path+filename, contentBytes);
 		assertTrue(fs.existFile(path+filename));
+	}
+	
+	@Test
+	public void nonExistantFileTest() throws IOException {
+		fs.mkdir(path);
+		assertTrue(!fs.existFile(path+filename));
 	}
 
 	@Test
@@ -80,6 +93,11 @@ public class BasicCassandraFsTests extends CassandraFsTest {
 		fs.deleteFile(path+filename);
 		assertTrue("The File Wasn't Deleted", !fs.existFile(path+filename));
 	}
+	
+	@Test
+	public void deleteNonExistantFileTest() throws IOException {
+		assertTrue(!fs.deleteFile(path+filename));
+	}
 
 	@Test
 	public void deleteFolderTest() throws IOException {
@@ -87,6 +105,11 @@ public class BasicCassandraFsTests extends CassandraFsTest {
 		assertTrue("The Folder Wasn't Created", fs.existDir(path));
 		fs.deleteDir(path, false);
 		assertTrue("The Folder Wasn't Deleted", !fs.existDir(path));
+	}
+	
+	@Test
+	public void deleteNonExistantFolderTest() throws IOException {
+		assertTrue(!fs.deleteDir(nestedPath, false));
 	}
 
 	@Test
