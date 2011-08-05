@@ -251,7 +251,6 @@ public class CassandraFileSystem implements IFileSystem {
 		} else {
 			return result;
 		}
-
 		// set the max size length, the max size length is for cli formatting
 		int max = 0;
 		for (Path child : result) {
@@ -260,7 +259,6 @@ public class CassandraFileSystem implements IFileSystem {
 			}
 		}
 		Path.MaxSizeLength = max;
-
 		return result;
 	}
 
