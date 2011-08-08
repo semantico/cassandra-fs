@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
+
+import org.apache.cassandra.contrib.fs.FSConstants;
 import org.apache.cassandra.contrib.fs.Path;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -20,6 +22,16 @@ public class CassandraFsTests extends CassandraFsTest {
 	private static final String filename3 = "testfile3.txt";
 	private static final String content = "some content\n";
 	private static final byte[] contentBytes = content.getBytes();
+	private static String longContent;
+	private static byte[] longContentBytes;
+	
+	static {
+		for(int i = 0; i < (10000); i++) {
+			longContent+= "lotsandlotsofchars"; 
+		}
+		longContentBytes = longContent.getBytes();
+	}
+	
 
 	@Test
 	public void makeDirTest() throws IOException {
@@ -33,11 +45,30 @@ public class CassandraFsTests extends CassandraFsTest {
 		assertTrue(fs.existDir(path));
 		assertTrue(fs.existDir(nestedPath));
 	}
+	
+	@Test
+	public void failingMakeDirTest() throws IOException {
+		fs.mkdir(nestedPath); //non existant parent folders should be made too
+		assertTrue(!fs.mkdir(nestedPath));
+	}
 
 	@Test
 	public void makeFileTest() throws IOException {
 		fs.mkdir(path);
 		fs.createFile(path+filename, contentBytes);
+		assertTrue(fs.existFile(path+filename));
+	}
+	
+	@Test
+	public void makeFileTwiceTest() throws IOException {
+		fs.createFile(path+filename, contentBytes);
+		fs.createFile(path+filename, contentBytes);
+	}
+	
+	@Test
+	public void makeBiggerFileTest() throws IOException {
+		fs.mkdir(path);
+		fs.createFile(path+filename, longContentBytes);
 		assertTrue(fs.existFile(path+filename));
 	}
 	
@@ -52,7 +83,12 @@ public class CassandraFsTests extends CassandraFsTest {
 		fs.mkdir(path);
 		fs.createFile(path+filename, contentBytes);
 		assertEquals(content.trim() , new BufferedReader(new InputStreamReader(fs.readFile(path+filename))).readLine());
-
+	}
+	
+	@Test
+	public void existTest() throws IOException {
+		fs.createFile(path+filename, contentBytes);
+		assertTrue(fs.exist(path+filename));
 	}
 
 	@Test
@@ -68,6 +104,21 @@ public class CassandraFsTests extends CassandraFsTest {
 		assertEquals(2, paths.size());
 		assertEquals(path+filename,paths.get(0).getURL());
 		assertEquals(path+filename2,paths.get(1).getURL());
+	}
+	
+	@Test
+	public void listNonExistantTest() throws IOException {
+		List<Path> paths = fs.list(path);
+		assertEquals(0, paths.size());
+	}
+	
+	@Test
+	public void listAFileTest() throws IOException {
+		fs.mkdir(path);
+		fs.createFile(path+filename, contentBytes);
+		List<Path> paths = fs.list(path+filename);
+		assertEquals(1, paths.size());
+		assertEquals(path+filename, paths.get(0).getURL());
 	}
 
 	@Test
@@ -122,10 +173,9 @@ public class CassandraFsTests extends CassandraFsTest {
 		assertTrue("The Folder Was Deleted, But it still had Files in!", fs.existDir(path));
 	}
 
-
 	@Test
 	public void succeedingDeleteNonEmptyFolderTest() throws IOException {
-		fs.mkdir(path);
+		fs.mkdir(nestedPath);
 		assertTrue("The Folder Wasn't Created", fs.existDir(path));
 		fs.createFile(path+filename, contentBytes);
 		assertTrue("The File Wasn't Created", fs.existFile(path+filename));
@@ -140,12 +190,14 @@ public class CassandraFsTests extends CassandraFsTest {
 	}
 	
 	@Test
-	public void readWriteLargeFileStreamTest() throws IOException {
+	public void readWriteDeleteLargeFileStreamTest() throws IOException {
 		readWriteStreamFromLocalTest("largeTextFile.txt");
+		fs.deleteFile(path+"largeTextFile.txt");
+		assertTrue(!fs.exist(path+"largeTextFile.txt"));
+		
 	}
 
 	private void readWriteStreamFromLocalTest(String fileToTestWith) throws IOException {
-		fs.mkdir(path);
 		InputStream inputStream = new FileInputStream(new File("src/test/resources/" + fileToTestWith));
 		fs.createFile(path+fileToTestWith, inputStream);
 		inputStream.close();

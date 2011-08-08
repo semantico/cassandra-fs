@@ -161,7 +161,7 @@ public class CassandraFileSystem implements IFileSystem {
 		String parent = PathUtil.getParent(path);
 		facade.delete(path);
 		for (int i = 1; facade.exist(path + "_$" + i); ++i) {
-			facade.delete(path + "_$" + i);
+			facade.delete(path + "_$" + i); //TODO: ------------------CODE COVER HERE IS CRAP ? WHAT IS HAPPENING ?!
 		}
 		facade.delete(parent, FSConstants.DefaultFolderCF, path);
 		return true;
