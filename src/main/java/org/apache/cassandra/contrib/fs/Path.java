@@ -1,14 +1,9 @@
 package org.apache.cassandra.contrib.fs;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import me.prettyprint.hector.api.beans.HColumn;
 
-import org.apache.cassandra.contrib.fs.permission.FsPermission;
 import org.apache.cassandra.contrib.fs.util.Bytes;
-import org.apache.cassandra.thrift.Column;
 
 public class Path {
 
@@ -21,21 +16,13 @@ public class Path {
 
 	private boolean isDir;
 
-	private int version = 1;
-
 	private int length;
 
 	private String last_modification_time;
 
-	private FsPermission permission;
-
 	private String owner;
 
 	private String group;
-
-	// add other attributes,
-
-	private Map<String, String> attributes = new HashMap<String, String>();
 
 	public Path(String url) {
 		this(url, false);
@@ -106,10 +93,6 @@ public class Path {
 
 	public int getLength() {
 		return this.length;
-	}
-
-	public static void main(String[] args) {
-		System.out.printf("%-10s", "zjf");
 	}
 
 }

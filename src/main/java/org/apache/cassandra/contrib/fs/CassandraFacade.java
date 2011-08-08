@@ -123,7 +123,7 @@ public class CassandraFacade {
 	}
 
 	public void put(String key, String column, byte[] value) throws IOException {
-		LOGGER.info("Hitting put");
+		LOGGER.trace("Hitting put");
 		try {
 			ColumnPath columnPath = extractColumnPath(column);
 			Mutator<String> mutator = HFactory.createMutator(HFactory.createKeyspace(conf.getKeyspace(), cluster), stringSerializer);
@@ -150,7 +150,7 @@ public class CassandraFacade {
 	}
 
 	public void batchPut(String key, String cfName, String colName, Map<byte[], byte[]> map, boolean isSuperColumn) throws IOException {
-		LOGGER.info("Hitting batchPut");
+		LOGGER.trace("Hitting batchPut");
 		try {
 			Keyspace ks = HFactory.createKeyspace(conf.getKeyspace(), cluster);
 			Mutator<String> mutator = HFactory.createMutator(HFactory.createKeyspace(conf.getKeyspace(), cluster), stringSerializer);
@@ -311,9 +311,7 @@ public class CassandraFacade {
 				//query.setColumnNames(columnNames); //TODO: ???
 				query.setRange("", "", false, Integer.MAX_VALUE); //TODO: maybe convert all the supercolumn names to byte[] ? or not
 				query.setKey(key);
-
 				List<HSuperColumn<String, String, byte[]>> superCols = query.execute().get().getSuperColumns();
-
 				for(HSuperColumn<String, String, byte[]> sc : superCols) {
 					String name = sc.getName();
 					List<HColumn<String, byte[]>> attributes = sc.getColumns();
@@ -324,25 +322,19 @@ public class CassandraFacade {
 						children.add(path);
 					}
 				}
-
 			} else if (columnFamily.equals(FSConstants.DefaultFileCF)) {
 				SliceQuery<String, String, byte[]> query = HFactory.createSliceQuery(ks, stringSerializer, stringSerializer, byteSerializer);
 				query.setColumnFamily(columnFamily);
 				query.setKey(key);
-				//query.setColumnNames(""); //TODO:  ???
-				query.setRange("", "", false, Integer.MAX_VALUE); //TODO: see above
-
+				query.setRange("", "", false, Integer.MAX_VALUE);
 				List<HColumn<String, byte[]>> slice = query.execute().get().getColumns();
-
 				if (slice.size() > 0) {
 					Path path = new Path(key, slice); 
 					children.add(path);
 				}
-
 			} else {
 				throw new RuntimeException("Do not support CF:'" + columnFamily + "' now");
 			}
-
 			return children;
 		} catch (Exception e) {
 			throw new IOException(e);
@@ -358,7 +350,6 @@ public class CassandraFacade {
 			query.setKey(file);
 			query.setRange("", "", false, Integer.MAX_VALUE);
 			List<HColumn<String, byte[]>> columns = query.execute().get().getColumns();
-
 			return new Path(file, columns);
 		} catch (Exception e) {
 			throw new IOException(e);
