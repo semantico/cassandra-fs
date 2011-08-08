@@ -84,7 +84,6 @@ public class CassandraFacade {
 		KeyspaceDefinition kspDescrip = cluster.describeKeyspace(conf.getKeyspace());
 		KeyspaceDefinition kspDef = HFactory.createKeyspaceDefinition(conf.getKeyspace(), conf.getReplicaPlacementStrategy(), conf.getReplicationFactor(), cfDefs);
 		if(kspDescrip == null) {
-
 			cluster.addKeyspace(kspDef);
 		} else {
 			List<ColumnFamilyDefinition> cfs =kspDescrip.getCfDefs();
@@ -98,13 +97,8 @@ public class CassandraFacade {
 				}
 			}
 			if(!hasFileFamily || !hasFolderFamily) {
-				cluster.dropKeyspace(conf.getKeyspace());
-				cluster.addKeyspace(kspDef);
+				throw new RuntimeException("Incorrectly Configured Keyspace detected");
 			}
-		}
-
-		if(cluster.describeKeyspace(kspDef.getName()) == null) {
-			throw new IOException("Error Initializing Keyspace");
 		}
 	}
 

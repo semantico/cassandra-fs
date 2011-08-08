@@ -13,7 +13,7 @@ import org.apache.cassandra.contrib.fs.Path;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class CassandraFsTest extends AbstractCassandraFsTest {
+public class CassandraFileSystemTest extends AbstractCassandraFsTest {
 
 	private static final String path = "/testDirectory/";
 	private static final String nestedPath = "/testDirectory/nestedFolder/";
