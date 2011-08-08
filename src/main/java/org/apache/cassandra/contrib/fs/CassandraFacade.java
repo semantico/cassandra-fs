@@ -135,19 +135,19 @@ public class CassandraFacade {
 			Mutator<String> mutator = HFactory.createMutator(HFactory.createKeyspace(conf.getKeyspace(), cluster), stringSerializer);
 
 			if(columnPath.isSetSuper_column()) {
-				LOGGER.info("- put into supercolumn of " + columnPath.getColumn_family());
+				LOGGER.trace("- put into supercolumn of " + columnPath.getColumn_family());
 				HColumn<String, byte[]> col = HFactory.createColumn(new String(columnPath.column.array()), value, stringSerializer, byteSerializer);
 				ArrayList<HColumn<String, byte[]>> cols = new ArrayList<HColumn<String, byte[]>>();
 				cols.add(col);
 				HSuperColumn<String, String, byte[]> superCol = HFactory.createSuperColumn(new String(columnPath.super_column.array()), cols, stringSerializer, stringSerializer, byteSerializer);
-				LOGGER.info("- - supercolumn : name:"+ new String(columnPath.super_column.array()) + " key:" + key );
-				LOGGER.info("- - - column : name:"+ new String(columnPath.column.array()) + " value:" + new String(value));
+				LOGGER.trace("- - supercolumn : name:"+ new String(columnPath.super_column.array()) + " key:" + key );
+				LOGGER.trace("- - - column : name:"+ new String(columnPath.column.array()) + " value:" + new String(value));
 				mutator.insert(key, columnPath.getColumn_family(), superCol);
 			} else {
-				LOGGER.info("- put into column " + columnPath.getColumn_family());
+				LOGGER.trace("- put into column " + columnPath.getColumn_family());
 				HColumn<String, byte[]> col = HFactory.createColumn(new String(columnPath.column.array()), value, stringSerializer, byteSerializer);
 				mutator.insert(key, columnPath.getColumn_family(), col);
-				LOGGER.info("- - column : name:"+ new String(columnPath.column.array()) + " key:" + key+" value:" + new String(value));
+				LOGGER.trace("- - column : name:"+ new String(columnPath.column.array()) + " key:" + key+" value:" + new String(value));
 			}
 
 		} catch (Exception e) {
@@ -162,20 +162,20 @@ public class CassandraFacade {
 			Mutator<String> mutator = HFactory.createMutator(HFactory.createKeyspace(conf.getKeyspace(), cluster), stringSerializer);
 
 			if (!isSuperColumn) {
-				LOGGER.info("- put into column of " + cfName);
+				LOGGER.trace("- put into column of " + cfName);
 				for (Map.Entry<byte[], byte[]> entry : map.entrySet()) {
 					HColumn<String, String> col = HFactory.createColumn(new String(entry.getKey()), new String(entry.getValue()), stringSerializer, stringSerializer);
 					mutator.addInsertion(key, cfName, col);
-					LOGGER.info("- - column : name:"+ new String(entry.getKey() + " key:" + key+" value:" + new String(entry.getValue())));
+					LOGGER.trace("- - column : name:"+ new String(entry.getKey() + " key:" + key+" value:" + new String(entry.getValue())));
 				}
 			}else{
-				LOGGER.info("- put into supercolumn of " + cfName);
+				LOGGER.trace("- put into supercolumn of " + cfName);
 				List<HColumn<String, byte[]>> cols = new ArrayList<HColumn<String, byte[]>>();
-				LOGGER.info("- - supercolumn : name:"+ colName + " key:" + key );
+				LOGGER.trace("- - supercolumn : name:"+ colName + " key:" + key );
 				for (Map.Entry<byte[], byte[]> entry : map.entrySet()) {
 					HColumn<String, byte[]> col = HFactory.createColumn(new String(entry.getKey()), entry.getValue(), stringSerializer, byteSerializer);
 					cols.add(col);
-					LOGGER.info("- - - column : name:"+ new String(entry.getKey()) + " value:" + new String(entry.getValue()));
+					LOGGER.trace("- - - column : name:"+ new String(entry.getKey()) + " value:" + new String(entry.getValue()));
 				}
 				HSuperColumn<String , String, byte[]> superCol = HFactory.createSuperColumn(colName, cols, stringSerializer, stringSerializer, byteSerializer);
 				mutator.addInsertion(key, cfName, superCol);
