@@ -48,8 +48,7 @@ public class PathUtil {
 					+ "' contains invalid character:':'");
 		}
 		if (path.contains("$")) {
-			throw new IOException("Path '" + path
-					+ "' contains invalid character:'$'");
+			throw new IOException("Path '" + path + "' contains invalid character:'$'");
 		}
 	}
 }
