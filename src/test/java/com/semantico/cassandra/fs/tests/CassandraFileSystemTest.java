@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 
-import org.apache.cassandra.contrib.fs.FSConstants;
+import org.apache.cassandra.contrib.fs.CassandraFacade;
 import org.apache.cassandra.contrib.fs.Path;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -216,5 +216,10 @@ public class CassandraFileSystemTest extends AbstractCassandraFsTest {
 		return true;
 	}
 
+	@Test(expected=IOException.class)
+	public void superColGetTest() throws IOException {
+		CassandraFacade facade = CassandraFacade.getInstance(conf);
+		facade.get("key", "family:SuperCol:Col"); //not found
+	}
 
 }

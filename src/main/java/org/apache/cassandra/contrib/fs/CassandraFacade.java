@@ -240,7 +240,6 @@ public class CassandraFacade {
 			Mutator<String> mutator = HFactory.createMutator(ks, stringSerializer);
 			mutator.addSuperDelete(key, columnFamily, superColumn, stringSerializer);
 			mutator.execute();
-
 		} catch (Exception e) {
 			throw new IOException(e);
 		} 
@@ -263,12 +262,6 @@ public class CassandraFacade {
 			//TODO: what does this do ? if we dont use the result in any way unless an exception is thrown
 		} catch (NotFoundException e) {
 			// do nothing
-		} catch (IllegalArgumentException e) {
-			throw new IOException(e);
-		} catch (IllegalStateException e) {
-			throw new IOException(e);
-		} catch (PoolExhaustedException e) {
-			throw new IOException(e);
 		} catch (Exception e) {
 			throw new IOException(e);
 		} 
@@ -286,12 +279,6 @@ public class CassandraFacade {
 			return true;
 		} catch (NotFoundException e) {
 			// do nothing
-		} catch (IllegalArgumentException e) {
-			throw new IOException(e);
-		} catch (IllegalStateException e) {
-			throw new IOException(e);
-		} catch (PoolExhaustedException e) {
-			throw new IOException(e);
 		} catch (Exception e) {
 			throw new IOException(e);
 		}

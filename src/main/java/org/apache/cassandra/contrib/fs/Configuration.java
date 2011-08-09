@@ -29,12 +29,15 @@ public class Configuration {
 	public Configuration(Properties customProperties) {
 		this.properties = customProperties;
 	}
+	
+	public Configuration() { //use all defaults
+		properties = new Properties();
+	}
 
 	public String getHosts() {
 		String hosts = properties.getProperty(FSConstants.Hosts);
 		if (hosts == null) {
-			LOGGER.warn("'" + FSConstants.Hosts
-					+ "' is not provided, the default value will been used");
+			LOGGER.warn("'" + FSConstants.Hosts+ "' is not provided, the default value will been used");
 			return FSConstants.DefaultHosts;
 		} else {
 			return hosts;
@@ -44,8 +47,7 @@ public class Configuration {
 	public int getMaxActive() {
 		String maxActive = properties.getProperty(FSConstants.MaxActive);
 		if (maxActive == null) {
-			LOGGER.warn("'" + FSConstants.MaxActive
-					+ "' is not provided, the default value will been used");
+			LOGGER.warn("'" + FSConstants.MaxActive+ "' is not provided, the default value will been used");
 			return FSConstants.DefaultMaxActive;
 		} else {
 			return Integer.parseInt(maxActive);

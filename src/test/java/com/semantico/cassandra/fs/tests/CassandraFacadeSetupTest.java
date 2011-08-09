@@ -55,7 +55,7 @@ public class CassandraFacadeSetupTest extends AbstractCassandraFsTest {
 	@Test
 	public void conflictingDefaultKeyspaceSetupTest() throws IOException {
 		setupPartialKeyspace(); // only half setup
-		System.out.println(cluster.describeKeyspace(conf.getKeyspace()));
+		//System.out.println(cluster.describeKeyspace(conf.getKeyspace()));
 		boolean wasThrown = false;
 		try {
 			CassandraFacade.getInstance(conf);

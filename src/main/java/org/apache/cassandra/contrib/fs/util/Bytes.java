@@ -656,7 +656,7 @@ public class Bytes {
 
 	/**
 	 * @param column
-	 * @return A byte array of a byte array where first and only entry is
+	 * @return An array of byte arrays where first and only entry is
 	 *         <code>column</code>
 	 */
 	public static byte[][] toByteArrays(final byte[] column) {

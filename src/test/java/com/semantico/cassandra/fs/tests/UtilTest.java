@@ -3,10 +3,10 @@ package com.semantico.cassandra.fs.tests;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.apache.cassandra.contrib.fs.FSConstants;
 import org.apache.cassandra.contrib.fs.PathUtil;
 import org.apache.cassandra.contrib.fs.util.Bytes;
 import org.apache.cassandra.contrib.fs.util.Helper;
-import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -35,6 +35,60 @@ public class UtilTest {
 		byte[] bytes = content.getBytes();
 		String result = Bytes.toString(bytes);
 		assertEquals(content, result);
+	}
+	
+	@Test
+	public void twoByteArrayToStringTest() {
+		String content1 = "foo";
+		String content2 = "bar";
+		byte[] bytes1 = content1.getBytes();
+		byte[] bytes2 = content2.getBytes();
+		String result = Bytes.toString(bytes1, " ", bytes2);
+		assertEquals("foo bar", result);
+	}
+	
+	@Test
+	public void emptyToStringTest() {
+		String result = Bytes.toString(new byte[0], 0, 0);
+		assertEquals("", result);
+	}
+	
+	@Test
+	public void nullToStringTest1() {
+		String result = Bytes.toString(null);
+		assertEquals(null, result);
+	}
+	
+	@Test
+	public void nullToStringTest2() {
+		String result = Bytes.toString(null, 0, 1);
+		assertEquals(null, result);
+	}
+	
+	@Test
+	public void binaryToStringTest() {
+		String content = "some content string";
+		byte[] bytes = content.getBytes();
+		String result = Bytes.toStringBinary(bytes);
+		assertEquals(content, result);
+	}
+	
+	@Test
+	public void booleanToByteTest() {
+		byte[] result = Bytes.toBytes(true);
+		assertEquals(result[0], (byte) -1);
+		result = Bytes.toBytes(false);
+		assertEquals(result[0], (byte) 0);
+	}
+	
+	@Test
+	public void byteToBooleantest() {
+		byte[] input = {0};
+		boolean result = Bytes.toBoolean(input);
+		assertTrue(!result);
+		byte[] input2 = {-1};
+		result = Bytes.toBoolean(input2);
+		assertTrue(result);
 	}
 	
 	@Test
@@ -100,6 +154,11 @@ public class UtilTest {
 	@Test()
 	public void pathUtilCheckPathTest5() throws IOException {
 		PathUtil.checkPath("/foo/bar/");
+	}
+	
+	@Test
+	public void fsConstantsInstantiationTest() {
+		assertNotNull(new FSConstants());
 	}
 	
 }

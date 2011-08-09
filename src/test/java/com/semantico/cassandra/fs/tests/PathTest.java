@@ -1,5 +1,6 @@
 package com.semantico.cassandra.fs.tests;
 
+import org.apache.cassandra.contrib.fs.InvalidPathException;
 import org.apache.cassandra.contrib.fs.Path;
 import org.junit.Test;
 
@@ -35,6 +36,21 @@ public class PathTest {
 		Path.MaxSizeLength = 10;
 		Path path = new Path("folder/folder2/");
 		path.toString();
+	}
+	
+	@Test
+	public void invalidPathTest() {
+		InvalidPathException e = new InvalidPathException();
+		assertNotNull(e);
+		e= new InvalidPathException("message");
+		assertEquals("message", e.getMessage());
+		Exception cause = new Exception("bla");
+		e = new InvalidPathException(cause);
+		assertEquals(cause, e.getCause());
+		e= new InvalidPathException("message", cause);
+		assertEquals("message", e.getMessage());
+		assertEquals(cause, e.getCause());
+		
 	}
 	
 }
