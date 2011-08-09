@@ -17,6 +17,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.thrift.transport.TTransportException;
 
+/**
+ * A Servlet that uses the request URI as a path for the underlying file system,
+ * and so can be used to serve up websites.
+ */
 public class CfsSiteServlet extends HttpServlet{
 	private static final long serialVersionUID = 1L;
 
@@ -108,6 +112,7 @@ public class CfsSiteServlet extends HttpServlet{
         String path = getPath(request);
         try {
         	store(request.getInputStream(), path);
+        	writeSuccessful(resp,path);
 		} 
         catch (CfsSiteException e) {
 			outputException(resp,e);

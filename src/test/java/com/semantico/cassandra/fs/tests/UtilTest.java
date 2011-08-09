@@ -106,6 +106,11 @@ public class UtilTest {
 		assertEquals("/somefolder",PathUtil.getParent("/somefolder/somefile/"));
 	}
 	
+	@Test(expected=RuntimeException.class)
+	public void pathUtilGetParentTest4() {
+		PathUtil.getParent("somefile");
+	}
+	
 	@Test
 	public void pathUtilRemoveTrailingSlashTest1() {
 		assertEquals("/somefolder",PathUtil.removeTrailingSlash("/somefolder/"));

@@ -278,7 +278,7 @@ public class CassandraFacade {
 			}
 			return true;
 		} catch (NotFoundException e) {
-			// do nothing
+			// do nothing, just return false
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
