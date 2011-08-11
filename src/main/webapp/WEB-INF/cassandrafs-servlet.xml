@@ -10,7 +10,7 @@
         http://www.springframework.org/schema/mvc
         http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
 
-	<context:component-scan base-package="org.apache.cassandra.contrib.fs.site" />
+	<context:component-scan base-package="org.apache.cassandra.contrib.fs" />
 	<mvc:annotation-driven />
 
 	<!-- controllers -->

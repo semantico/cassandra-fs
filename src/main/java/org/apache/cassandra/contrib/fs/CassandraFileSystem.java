@@ -123,9 +123,7 @@ public class CassandraFileSystem implements IFileSystem {
 				count+= num;
 				remaining-= num;
 			}
-			if (num == -1) {
-				break;
-			}
+			
 			byte[] content;
 			if(count != buffer.length) {
 				content = new byte[count];
@@ -143,6 +141,9 @@ public class CassandraFileSystem implements IFileSystem {
 						+ FSConstants.ContentAttr, content);
 			}
 			index++;
+			if (num == -1) {
+				break;
+			}
 		}
 		Map<byte[], byte[]> map = new HashMap<byte[], byte[]>();
 		map.put(Bytes.toBytes(FSConstants.TypeAttr), Bytes.toBytes("File"));

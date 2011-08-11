@@ -2,6 +2,7 @@ package org.apache.cassandra.contrib.fs.site;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.Map;
 
@@ -20,67 +21,101 @@ public abstract class AbstractCassandraFsView extends AbstractView {
 			handleRequest(request, response);
 		} catch (Exception e) {
 			writeException(response, new CfsSiteException(e.getClass().getName(),e.getMessage()));
+		} finally {
+			response.getOutputStream().flush();
 		}
 	}
 	
 	abstract protected void handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception;
 	
-	protected void writeSuccessful(HttpServletResponse resp,String msg){
+	protected void writeSuccessful(HttpServletResponse resp,String msg) {
 		resp.setContentType("text/xml");
+		OutputStreamWriter writer = null;
 		try {
 			//TODO: use more advanced xml generation
-			resp.getWriter().write("<Response>\n");
-				resp.getWriter().write("<Code>\n");
-					resp.getWriter().write("OK");
-				resp.getWriter().write("</Code>\n");
-				
-				resp.getWriter().write("<Message>\n");
-					resp.getWriter().write(msg); //TODO: replace special chars
-				resp.getWriter().write("</Message>\n");
-			resp.getWriter().write("</Response>");	
+			writer = new OutputStreamWriter(resp.getOutputStream());
+			writer.write("<Response>\n");
+			writer.write("<Code>\n");
+			writer.write("OK");
+			writer.write("</Code>\n");
+			writer.write("<Message>\n");
+			writer.write(msg); //TODO: replace special chars
+			writer.write("</Message>\n");
+			writer.write("</Response>");
 		}
 		catch (IOException e) {
 			e.printStackTrace();
-		}	
+		} finally {
+			if(writer != null) {
+				try {
+					writer.flush();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 	
 	protected void writeException(HttpServletResponse resp, CfsSiteException ex) {
 		resp.setContentType("text/xml");
+		OutputStreamWriter writer = null;
 		try {
-			OutputStream out = resp.getOutputStream();
-			out.write("<Error>\n".getBytes());
-			out.write("<Code>\n".getBytes());
-			out.write(StringEscapeUtils.escapeXml(ex.getErrorCode()).getBytes());
-			out.write("</Code>\n".getBytes());
-			out.write("<Message>\n".getBytes());
-			out.write(StringEscapeUtils.escapeXml(ex.getMessage()).getBytes()); 
-			out.write("</Message>\n".getBytes());
-			out.write("</Error>".getBytes());
-			out.flush();
+			writer = new OutputStreamWriter(resp.getOutputStream());
+			writer.write("<Error>\n");
+			writer.write("<Code>\n");
+			writer.write(StringEscapeUtils.escapeXml(ex.getErrorCode()));
+			writer.write("</Code>\n");
+			writer.write("<Message>\n");
+			writer.write(StringEscapeUtils.escapeXml(ex.getMessage())); 
+			writer.write("</Message>\n");
+			writer.write("</Error>");
 		}
 		catch (IOException e) {
 			e.printStackTrace();
-		}	
+		} finally {
+			if(writer != null) {
+				try {
+					writer.flush();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 	
 	protected void writePaths(HttpServletResponse resp,String dir,List<Path> subs){
 		resp.setContentType("text/xml");
+		OutputStreamWriter writer = null;
 		try {
-			resp.getWriter().write("<Paths dir=\"" + dir + "\">\n");
+			writer = new OutputStreamWriter(resp.getOutputStream());
+			writer.write("<Paths dir=\"" + dir + "\">\n");
 			for(Path sub : subs){
-				resp.getWriter().write("<Path>");
-					resp.getWriter().write(StringEscapeUtils.escapeXml(sub.getName()));
-				resp.getWriter().write("</Path>\n");	
+				writer.write("<Path>");
+				writer.write(StringEscapeUtils.escapeXml(sub.getName()));
+				writer.write("</Path>\n");	
 			}
-			resp.getWriter().write("</Paths>");		
+			writer.write("</Paths>");		
 		}
 		catch (IOException e) {
 			e.printStackTrace();
-		}	
+		}finally {
+			if(writer != null) {
+				try {
+					writer.flush();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	protected String getPath(HttpServletRequest request){
 		return request.getRequestURI();
+	}
+	
+	protected String getFileName(HttpServletRequest request) {
+		String[] parts = request.getRequestURI().split("/");
+		return parts[parts.length-1];
 	}
 	
 }
