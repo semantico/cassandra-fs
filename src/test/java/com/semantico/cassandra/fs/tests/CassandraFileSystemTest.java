@@ -192,7 +192,6 @@ public class CassandraFileSystemTest extends AbstractCassandraFsTest {
 	@Test
 	public void readWriteDeleteLargeFileStreamTest() throws IOException {
 		readWriteStreamFromLocalTest("largeTextFile.txt");
-		assertTrue(fs.exist(path+"largeTextFile.txt"));
 		fs.deleteFile(path+"largeTextFile.txt");
 		assertTrue(!fs.exist(path+"largeTextFile.txt"));
 		
