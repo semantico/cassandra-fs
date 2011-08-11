@@ -1,13 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
-
 	<artifactId>cassandra-fs</artifactId>
-	<packaging>jar</packaging>
-
+	<packaging>war</packaging>
 	<name>cassandra-fs</name>
-
 	<parent>
 		<groupId>com.semantico.sipp2</groupId>
 		<artifactId>sipp2-parent</artifactId>
@@ -15,10 +11,9 @@
 		<relativePath>../sipp2-parent/pom.xml</relativePath>
 	</parent>
 
-	<properties>
-		<java-version>1.6</java-version>
-		<org.springframework-version>3.0.4.RELEASE</org.springframework-version>
-	</properties>
+<properties>
+<storage-config>conf</storage-config>
+</properties>
 	<reporting>
 		<plugins>
 			<plugin>
@@ -28,7 +23,22 @@
 			</plugin>
 		</plugins>
 	</reporting>
-	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>tomcat-maven-plugin</artifactId>
+				<version>1.1</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<configuration>
+					<warName>cassandra-fs</warName>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.cassandra</groupId>
@@ -40,11 +50,9 @@
 			<artifactId>hector-core</artifactId>
 			<version>0.8.0-1</version>
 		</dependency>
-<!--		<dependency>  Hadoop FS (currently classes commented out and totally untested) 
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-core</artifactId>
-			<version>0.20.2</version>
-		</dependency> -->
+		<!-- <dependency> Hadoop FS (currently classes commented out and totally 
+			untested) <groupId>org.apache.hadoop</groupId> <artifactId>hadoop-core</artifactId> 
+			<version>0.20.2</version> </dependency> -->
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
@@ -58,16 +66,32 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+			<groupId>javax.servlet.jsp</groupId>
+			<artifactId>jsp-api</artifactId>
+			<version>2.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
-			<version>${org.springframework-version}</version>
-			<scope>test</scope>
+			<version>${spring.version}</version>
+			<exclusions>
+				<!-- Exclude Commons Logging in favor of SLF4j -->
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
-			<version>${org.springframework-version}</version>
-			<scope>test</scope>
+			<version>${spring.version}</version>
 		</dependency>
 		<!-- Override Dependency Conflict -->
 		<dependency>
@@ -94,11 +118,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>${org.springframework-version}</version>
-            <scope>test</scope>
-        </dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>${spring.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>com.semantico.sipp2</groupId>
 			<artifactId>embedded-cassandra-utils</artifactId>

@@ -43,7 +43,7 @@ public class CassandraFileSystem implements IFileSystem {
 		}
 		return instance;
 	}
-	
+
 	public static void dropInstance() { // used for ensuring different keyspaces between tests
 		instance = null;
 	}
@@ -70,11 +70,11 @@ public class CassandraFileSystem implements IFileSystem {
 			if (i == 0) {
 				facade.put(path, FSConstants.DefaultFileCF + ":"
 						+ FSConstants.ContentAttr, Arrays.copyOfRange(content,
-						from, to));
+								from, to));
 			} else {
 				facade.put(path + "_$" + i, FSConstants.DefaultFileCF + ":"
 						+ FSConstants.ContentAttr, Arrays.copyOfRange(content,
-						from, to));
+								from, to));
 			}
 		}
 
@@ -113,13 +113,28 @@ public class CassandraFileSystem implements IFileSystem {
 		int index = 0;
 		int num = 0;
 		while (true) {
-			num = in.read(buffer);
+			int count = 0;
+			int remaining = buffer.length;
+			while(true) {
+				num = in.read(buffer, count, remaining);
+				if (remaining == 0 || num == -1) {
+					break;
+				}
+				count+= num;
+				remaining-= num;
+			}
 			if (num == -1) {
 				break;
 			}
-			byte[] content = new byte[num];
-			System.arraycopy(buffer, 0, content, 0, num);
-			length += num;
+			byte[] content;
+			if(count != buffer.length) {
+				content = new byte[count];
+				System.arraycopy(buffer, 0, content, 0, count);
+			} else {
+				content = buffer;
+			}
+			
+			length += count;
 			if (index == 0) {
 				facade.put(path, FSConstants.DefaultFileCF + ":"
 						+ FSConstants.ContentAttr, content);

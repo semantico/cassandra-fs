@@ -2,13 +2,14 @@ package org.apache.cassandra.contrib.fs;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.NotFoundException;
 import org.apache.log4j.Logger;
-import me.prettyprint.cassandra.connection.ConcurrentHClientPool;
 import me.prettyprint.cassandra.serializers.BytesArraySerializer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
@@ -21,9 +22,7 @@ import me.prettyprint.hector.api.ddl.ColumnFamilyDefinition;
 import me.prettyprint.hector.api.ddl.ColumnType;
 import me.prettyprint.hector.api.ddl.ComparatorType;
 import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
-import me.prettyprint.hector.api.exceptions.PoolExhaustedException;
 import me.prettyprint.hector.api.factory.HFactory;
-import me.prettyprint.hector.api.mutation.MutationResult;
 import me.prettyprint.hector.api.mutation.Mutator;
 import me.prettyprint.hector.api.query.ColumnQuery;
 import me.prettyprint.hector.api.query.QueryResult;
@@ -41,9 +40,21 @@ public class CassandraFacade {
 			synchronized (CassandraFacade.class) {
 				if (instance == null) {
 					if(conf == null) { //no custom config, initialize from file
-						File clientConfFile = new File(System.getProperty("storage-config")+ File.separator + "config.properties");
-						if (!clientConfFile.exists()) {
-							throw new RuntimeException("'" + clientConfFile.getAbsolutePath()+ "' does not exist!");
+						String configLocation = System.getProperty("storage-config");
+						URL config;
+						if(configLocation == null) {
+						config = CassandraFacade.class.getClassLoader().getResource("config.properties");
+						} else {
+							config = new URL(configLocation+ File.separator + "config.properties");
+						}
+						File clientConfFile = null;
+						try {
+							clientConfFile = new File(config.toURI());
+						} catch (URISyntaxException e) {
+							//e.printStackTrace();
+						}
+						if (clientConfFile == null || !clientConfFile.exists()) {
+							throw new RuntimeException("'" + config.toString()+ "' does not exist!");
 						}
 						conf = new Configuration(clientConfFile.getAbsolutePath());
 					}
@@ -152,7 +163,7 @@ public class CassandraFacade {
 	public void batchPut(String key, String cfName, String colName, Map<byte[], byte[]> map, boolean isSuperColumn) throws IOException {
 		LOGGER.trace("Hitting batchPut");
 		try {
-			Keyspace ks = HFactory.createKeyspace(conf.getKeyspace(), cluster);
+			//Keyspace ks = HFactory.createKeyspace(conf.getKeyspace(), cluster);
 			Mutator<String> mutator = HFactory.createMutator(HFactory.createKeyspace(conf.getKeyspace(), cluster), stringSerializer);
 
 			if (!isSuperColumn) {
@@ -176,7 +187,7 @@ public class CassandraFacade {
 			}
 
 			//ks.batchInsert(key, cfMap, superCFMap);
-			MutationResult result = mutator.execute();
+			mutator.execute();
 		} catch (Exception e) {
 			throw new IOException(e);
 		} 
@@ -184,7 +195,7 @@ public class CassandraFacade {
 
 	public byte[] get(String key, String column) throws IOException {
 		Keyspace ks = null;
-		LOGGER.info("Hitting Get: Key:" + key + "  ColumnPath:"  + column);
+		System.out.println("Hitting Get: Key:" + key + "  ColumnPath:"  + column);
 		try {
 			ColumnPath columnPath = extractColumnPath(column);
 			ks = HFactory.createKeyspace(conf.getKeyspace(), cluster);

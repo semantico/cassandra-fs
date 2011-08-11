@@ -172,8 +172,8 @@ public class CfsSiteServlet extends HttpServlet{
 			IOUtils.copy(CassandraFileSystem.getInstance(null).readFile(path), stream);
 		} catch (TTransportException e) {
 			throw CfsSiteException.fromTTransportException(e);
-		} catch (IOException e) {
-			throw new CfsSiteException("IOException",e.getMessage());
+		} catch (Exception e) {
+			throw new CfsSiteException(e.getClass().getName(),e.getMessage());
 		}
 		return path;
 	}

@@ -25,6 +25,7 @@ public class CFileInputStream extends InputStream {
 	}
 
 	@Override
+	@Deprecated
 	public int read() throws IOException {
 		int next = curBlockStream.read();
 		if (next != -1) {
@@ -35,6 +36,26 @@ public class CFileInputStream extends InputStream {
 						FSConstants.DefaultFileCF + ":" + FSConstants.ContentAttr);
 				curBlockStream = new ByteArrayInputStream(bytes);
 				return curBlockStream.read();
+			} catch (IOException e) {
+				if (e.getCause() instanceof NotFoundException) {
+					return -1;
+				} else {
+					throw e;
+				}
+			}
+		}
+	}
+	
+	@Override
+	public int read(byte[] buffer, int offset, int length) throws IOException {
+		int nRead = curBlockStream.read(buffer, offset, length);
+		if (nRead != -1) {
+			return nRead;
+		} else {
+			try {
+				byte[] bytes = facade.get(path + "_$" + blockIndex++,FSConstants.DefaultFileCF + ":" + FSConstants.ContentAttr);
+				curBlockStream = new ByteArrayInputStream(bytes);
+				return curBlockStream.read(buffer, offset, length);
 			} catch (IOException e) {
 				if (e.getCause() instanceof NotFoundException) {
 					return -1;
