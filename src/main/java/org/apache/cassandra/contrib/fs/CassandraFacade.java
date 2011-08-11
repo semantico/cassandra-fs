@@ -45,7 +45,7 @@ public class CassandraFacade {
 						if(configLocation == null) {
 						config = CassandraFacade.class.getClassLoader().getResource("config.properties");
 						} else {
-							config = new URL(configLocation+ File.separator + "config.properties");
+							config = new URL("file:/" +System.getProperty("user.dir")+ File.separator+ configLocation+File.separator+ "config.properties");
 						}
 						File clientConfFile = null;
 						try {
