@@ -1,11 +1,11 @@
 package org.apache.cassandra.contrib.fs;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -58,49 +58,7 @@ public class CassandraFileSystem implements IFileSystem {
 	}
 
 	public void createFile(String path, byte[] content) throws IOException {
-		PathUtil.checkPath(path);
-		path = PathUtil.normalizePath(path);
-		String parent = PathUtil.getParent(path);
-		if (!existDir(parent)) {
-			mkdir(parent);
-		}
-
-		for (int i = 0; i < content.length / FSConstants.BlockSize + 1; ++i) {
-			int from = i * FSConstants.BlockSize;
-			int to = ((i + 1) * FSConstants.BlockSize > content.length) ? content.length
-					: (i + 1) * FSConstants.BlockSize;
-			if (i == 0) {
-				facade.put(path, FSConstants.DefaultFileCF + ":"
-						+ FSConstants.ContentAttr, Arrays.copyOfRange(content,
-								from, to));
-			} else {
-				facade.put(path + "_$" + i, FSConstants.DefaultFileCF + ":"
-						+ FSConstants.ContentAttr, Arrays.copyOfRange(content,
-								from, to));
-			}
-		}
-
-		Map<byte[], byte[]> map = new HashMap<byte[], byte[]>();
-		map.put(Bytes.toBytes(FSConstants.TypeAttr), Bytes.toBytes("File"));
-		map.put(Bytes.toBytes(FSConstants.LengthAttr), Bytes
-				.toBytes(content.length));
-		map.put(Bytes.toBytes(FSConstants.LastModifyTime), Bytes.toBytes(format
-				.format(new Date())));
-		map.put(Bytes.toBytes(FSConstants.OwnerAttr), FSConstants.DefaultOwner);
-		map.put(Bytes.toBytes(FSConstants.GroupAttr), FSConstants.DefaultGroup);
-		facade.batchPut(path, FSConstants.DefaultFileCF, null, map, false);
-
-		// add meta data for parent, except the Content
-		map = new HashMap<byte[], byte[]>();
-		map.put(Bytes.toBytes(FSConstants.TypeAttr), Bytes.toBytes("File"));
-		map.put(Bytes.toBytes(FSConstants.LengthAttr), Bytes
-				.toBytes(content.length));
-		map.put(Bytes.toBytes(FSConstants.LastModifyTime), Bytes.toBytes(format
-				.format(new Date())));
-		map.put(Bytes.toBytes(FSConstants.OwnerAttr), FSConstants.DefaultOwner);
-		map.put(Bytes.toBytes(FSConstants.GroupAttr), FSConstants.DefaultGroup);
-
-		facade.batchPut(parent, FSConstants.DefaultFolderCF, path, map, true);
+		createFile(path, new ByteArrayInputStream(content));
 	}
 
 	public void createFile(String path, InputStream in) throws IOException {
@@ -111,7 +69,8 @@ public class CassandraFileSystem implements IFileSystem {
 			mkdir(parent);
 		}
 
-		int length = 0;
+		long length = 0;
+		long compressedLength = 0;
 		int index = 0;
 		int num = 0;
 		while (true) {
@@ -130,6 +89,7 @@ public class CassandraFileSystem implements IFileSystem {
 			byte[] compress = Snappy.compress(content);
 
 			length += count;
+			compressedLength += compress.length;
 			if (index == 0) {
 				facade.put(path, FSConstants.DefaultFileCF + ":"
 						+ FSConstants.ContentAttr, compress);
@@ -145,8 +105,8 @@ public class CassandraFileSystem implements IFileSystem {
 		Map<byte[], byte[]> map = new HashMap<byte[], byte[]>();
 		map.put(Bytes.toBytes(FSConstants.TypeAttr), Bytes.toBytes("File"));
 		map.put(Bytes.toBytes(FSConstants.LengthAttr), Bytes.toBytes(length));
-		map.put(Bytes.toBytes(FSConstants.LastModifyTime), Bytes.toBytes(format
-				.format(new Date())));
+		map.put(Bytes.toBytes(FSConstants.CompressedLengthAttr), Bytes.toBytes(compressedLength));
+		map.put(Bytes.toBytes(FSConstants.LastModifyTime), Bytes.toBytes(format.format(new Date())));
 		map.put(Bytes.toBytes(FSConstants.OwnerAttr), FSConstants.DefaultOwner);
 		map.put(Bytes.toBytes(FSConstants.GroupAttr), FSConstants.DefaultGroup);
 		facade.batchPut(path, FSConstants.DefaultFileCF, null, map, false);
@@ -155,8 +115,8 @@ public class CassandraFileSystem implements IFileSystem {
 		map = new HashMap<byte[], byte[]>();
 		map.put(Bytes.toBytes(FSConstants.TypeAttr), Bytes.toBytes("File"));
 		map.put(Bytes.toBytes(FSConstants.LengthAttr), Bytes.toBytes(length));
-		map.put(Bytes.toBytes(FSConstants.LastModifyTime), Bytes.toBytes(format
-				.format(new Date())));
+		map.put(Bytes.toBytes(FSConstants.CompressedLengthAttr), Bytes.toBytes(compressedLength));
+		map.put(Bytes.toBytes(FSConstants.LastModifyTime), Bytes.toBytes(format.format(new Date())));
 		map.put(Bytes.toBytes(FSConstants.OwnerAttr), FSConstants.DefaultOwner);
 		map.put(Bytes.toBytes(FSConstants.GroupAttr), FSConstants.DefaultGroup);
 
@@ -239,7 +199,8 @@ public class CassandraFileSystem implements IFileSystem {
 			Map<byte[], byte[]> map = new HashMap<byte[], byte[]>();
 			map.put(Bytes.toBytes(FSConstants.TypeAttr), Bytes
 					.toBytes("Folder"));
-			map.put(Bytes.toBytes(FSConstants.LengthAttr), Bytes.toBytes(0));
+			map.put(Bytes.toBytes(FSConstants.LengthAttr), Bytes.toBytes(0L));
+			map.put(Bytes.toBytes(FSConstants.CompressedLengthAttr), Bytes.toBytes(0L));
 			map.put(Bytes.toBytes(FSConstants.LastModifyTime), Bytes
 					.toBytes(format.format(new Date())));
 			map.put(Bytes.toBytes(FSConstants.OwnerAttr),

@@ -9,21 +9,15 @@ public class Path {
 
 	// This value only will be used in cli for formatting
 	public static int MaxSizeLength;
-
 	private String url;
-
 	private String name;
-
 	private boolean isDir;
-
-	private int length;
-
+	private long length;
+	private long compressedLength;
 	private String last_modification_time;
-
 	private String owner;
-
 	private String group;
-
+	
 	public Path(String url) {
 		this(url, false);
 	}
@@ -62,7 +56,9 @@ public class Path {
 			} else if (attrName.equals(FSConstants.GroupAttr)) {
 				this.group = Bytes.toString(attr.getValue());
 			} else if (attrName.equals(FSConstants.LengthAttr)) {
-				this.length = Bytes.toInt(attr.getValue());
+				this.length = Bytes.toLong(attr.getValue());
+			}else if (attrName.equals(FSConstants.CompressedLengthAttr)) {
+				this.compressedLength = Bytes.toLong(attr.getValue());
 			}
 		}
 	}
@@ -91,8 +87,12 @@ public class Path {
 		return this.name;
 	}
 
-	public int getLength() {
+	public long getLength() {
 		return this.length;
+	}
+	
+	public long getCompressedLength() {
+		return compressedLength;
 	}
 
 }

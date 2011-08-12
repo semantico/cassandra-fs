@@ -3,6 +3,7 @@ package com.semantico.cassandra.fs.tests;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -195,6 +196,15 @@ public class CassandraFileSystemTest extends AbstractCassandraFsTest {
 		fs.deleteFile(path+"largeTextFile.txt");
 		assertTrue(!fs.exist(path+"largeTextFile.txt"));
 		
+	}
+	
+	@Test
+	public void fileCompressedTest() throws IOException {
+		InputStream inputStream = new FileInputStream(new File("src/test/resources/compressableFile.txt"));
+		fs.createFile(path+"compressableFile.txt", inputStream);
+		//CassandraFacade.getInstance(null).list(key, columnFamily, includeFolderFlag)
+		Path p = fs.list(path+"compressableFile.txt").get(0);
+		assertTrue("File compression not better than 90% on an easily compressable file", (p.getLength()/10) > p.getCompressedLength());
 	}
 
 	private void readWriteStreamFromLocalTest(String fileToTestWith) throws IOException {

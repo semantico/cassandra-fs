@@ -48,6 +48,7 @@ public class FSConstants {
 	public final static String TypeAttr = "Type"; // file or folder
 	public final static String ContentAttr = "Content"; //bytes
 	public final static String LengthAttr = "Length"; //long (size in bytes)
+	public final static String CompressedLengthAttr = "CompressedLength"; //long (size in bytes)
 	public final static String LastModifyTime = "LastModifyTime";//Time
 	public final static String OwnerAttr = "Owner";
 	public final static String GroupAttr = "Group";
