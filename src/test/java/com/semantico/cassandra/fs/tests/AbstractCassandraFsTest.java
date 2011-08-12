@@ -30,7 +30,7 @@ public abstract class AbstractCassandraFsTest extends CassandraTest {
 		properties.load(new FileInputStream(new File("src/test/resources/config.properties")));
 		properties.setProperty(FSConstants.KeySpace, keyspace.getKeyspaceName());
 		properties.setProperty(FSConstants.ClusterName, cluster.describeClusterName());
-		properties.setProperty(FSConstants.Hosts, "localhost:19160");
+		properties.setProperty(FSConstants.HostsKey, "localhost:19160");
 		conf = new Configuration(properties);
 		fs = CassandraFileSystem.getInstance(conf);
 		//logger.info("----------------- NEW KEYSPACE: " + keyspace.getKeyspaceName());

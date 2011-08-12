@@ -33,7 +33,7 @@ public class CassandraFileSystem implements IFileSystem {
 
 	private CassandraFacade facade;
 
-	private byte[] buffer = new byte[FSConstants.BlockSize];
+	private byte[] buffer;
 
 	public static IFileSystem getInstance(Configuration conf) throws TTransportException, IOException {
 		if (instance == null) {
@@ -52,6 +52,7 @@ public class CassandraFileSystem implements IFileSystem {
 
 	private CassandraFileSystem(Configuration conf) throws TTransportException, IOException {
 		this.facade = CassandraFacade.getInstance(conf);
+		buffer = new byte[conf.getBlockSize()];
 		if (!existDir("/")) {
 			mkdir("/");
 		}

@@ -35,9 +35,9 @@ public class Configuration {
 	}
 
 	public String getHosts() {
-		String hosts = properties.getProperty(FSConstants.Hosts);
+		String hosts = properties.getProperty(FSConstants.HostsKey);
 		if (hosts == null) {
-			LOGGER.warn("'" + FSConstants.Hosts+ "' is not provided, the default value will been used");
+			LOGGER.warn("'" + FSConstants.HostsKey+ "' is not provided, the default value will been used");
 			return FSConstants.DefaultHosts;
 		} else {
 			return hosts;
@@ -45,9 +45,9 @@ public class Configuration {
 	}
 
 	public int getMaxActive() {
-		String maxActive = properties.getProperty(FSConstants.MaxActive);
+		String maxActive = properties.getProperty(FSConstants.MaxActiveKey);
 		if (maxActive == null) {
-			LOGGER.warn("'" + FSConstants.MaxActive+ "' is not provided, the default value will been used");
+			LOGGER.warn("'" + FSConstants.MaxActiveKey+ "' is not provided, the default value will been used");
 			return FSConstants.DefaultMaxActive;
 		} else {
 			return Integer.parseInt(maxActive);
@@ -55,9 +55,9 @@ public class Configuration {
 	}
 
 	public int getMaxIdle() {
-		String maxIdle = properties.getProperty(FSConstants.MaxIdle);
+		String maxIdle = properties.getProperty(FSConstants.MaxIdleKey);
 		if (maxIdle == null) {
-			LOGGER.warn("'" + FSConstants.MaxIdle
+			LOGGER.warn("'" + FSConstants.MaxIdleKey
 					+ "' is not provided, the default value will been used");
 			return FSConstants.DefaultMaxIdle;
 		} else {
@@ -67,9 +67,9 @@ public class Configuration {
 
 	public int getMaxWaitTimeWhenExhausted() {
 		String maxWaitTimeWhenExhausted = properties
-				.getProperty(FSConstants.MaxWaitTimeWhenExhausted);
+				.getProperty(FSConstants.MaxWaitTimeWhenExhaustedKey);
 		if (maxWaitTimeWhenExhausted == null) {
-			LOGGER.warn("'" + FSConstants.MaxWaitTimeWhenExhausted
+			LOGGER.warn("'" + FSConstants.MaxWaitTimeWhenExhaustedKey
 					+ "' is not provided, the default value will been used");
 			return FSConstants.DefaultMaxWaitTimeWhenExhausted;
 		} else {
@@ -78,9 +78,9 @@ public class Configuration {
 	}
 
 	public int getCassandraThriftSocketTimeout() {
-		String cassandraThriftSocketTimeout = properties.getProperty(FSConstants.CassandraThriftSocketTimeout);
+		String cassandraThriftSocketTimeout = properties.getProperty(FSConstants.CassandraThriftSocketTimeoutKey);
 		if (cassandraThriftSocketTimeout == null) {
-			LOGGER.warn("'" + FSConstants.CassandraThriftSocketTimeout
+			LOGGER.warn("'" + FSConstants.CassandraThriftSocketTimeoutKey
 					+ "' is not provided, the default value will been used");
 			return FSConstants.DefaultCassandraThriftSocketTimeout;
 		} else {
@@ -89,9 +89,9 @@ public class Configuration {
 	}
 	
 	public String getReplicaPlacementStrategy() {
-		String cassandraReplicaStrategyClass = properties.getProperty(FSConstants.ReplicaStrategyClass);
+		String cassandraReplicaStrategyClass = properties.getProperty(FSConstants.ReplicaStrategyClassKey);
 		if (cassandraReplicaStrategyClass == null) {
-			LOGGER.warn("'" + FSConstants.ReplicaStrategyClass
+			LOGGER.warn("'" + FSConstants.ReplicaStrategyClassKey
 					+ "' is not provided, the default value will been used");
 			return FSConstants.DefaultReplicaPlacementStrategy;
 		} else {
@@ -100,9 +100,9 @@ public class Configuration {
 	}
 	
 	public int getReplicationFactor() {
-		String cassandraReplicationFactor = properties.getProperty(FSConstants.ReplicationFactor);
+		String cassandraReplicationFactor = properties.getProperty(FSConstants.ReplicationFactorKey);
 		if (cassandraReplicationFactor == null) {
-			LOGGER.warn("'" + FSConstants.ReplicationFactor
+			LOGGER.warn("'" + FSConstants.ReplicationFactorKey
 					+ "' is not provided, the default value will been used");
 			return FSConstants.DefaultReplicationFactor;
 		} else {
@@ -125,6 +125,17 @@ public class Configuration {
 			return FSConstants.DefaultKeySpace;
 		} else {
 			return keyspace;
+		}
+	}
+
+	public int getBlockSize() {
+		String fileBlockSize = properties.getProperty(FSConstants.BlockSizeKey);
+		if (fileBlockSize == null) {
+			LOGGER.warn("'" + FSConstants.BlockSizeKey
+					+ "' is not provided, the default value will been used");
+			return FSConstants.DefaultBlockSize;
+		} else {
+			return Integer.parseInt(fileBlockSize);
 		}
 	}
 

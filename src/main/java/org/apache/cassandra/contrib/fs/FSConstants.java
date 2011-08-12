@@ -10,14 +10,15 @@ public class FSConstants {
 	// ----------Property Keys---------------
 	
 	//client setup
-	public final static String Hosts = "cassandra.client.hosts";
-	public final static String ExhaustedPolicy = ""; //Unsupported
-	public final static String MaxActive = "cassandra.client.maxActive";
-	public final static String MaxIdle = "cassandra.client.maxIdle";
-	public final static String MaxWaitTimeWhenExhausted = "cassandra.client.maxWaitTimeWhenExhausted";
-	public final static String CassandraThriftSocketTimeout = "cassandra.client.cassandraThriftSocketTimeout";
-	public final static String ReplicaStrategyClass = "cassandra.client.replicaPlacementStrategy"; 
-	public final static String ReplicationFactor = "cassandra.client.replicationFactor";
+	public final static String HostsKey = "cassandra.client.hosts";
+	public final static String ExhaustedPolicyKey = ""; //Unsupported
+	public final static String MaxActiveKey = "cassandra.client.maxActive";
+	public final static String MaxIdleKey = "cassandra.client.maxIdle";
+	public final static String MaxWaitTimeWhenExhaustedKey = "cassandra.client.maxWaitTimeWhenExhausted";
+	public final static String CassandraThriftSocketTimeoutKey = "cassandra.client.cassandraThriftSocketTimeout";
+	public final static String ReplicaStrategyClassKey = "cassandra.client.replicaPlacementStrategy"; 
+	public final static String ReplicationFactorKey = "cassandra.client.replicationFactor";
+	public final static String BlockSizeKey = "cassandra.client.blockSize";
 	
 	//cluster setup (should be consistent across nodes)
 	public final static String ClusterName = "cassandra.cluster.name";
@@ -61,7 +62,7 @@ public class FSConstants {
 	// size limitation
 	public final static int MaxFileSize = 1024 * 1024 * 1024 * 1024;
 
-	public final static int BlockSize = 1024*1024; //1mb
+	public final static int DefaultBlockSize = 1024*1024; //1mb
 
 
 	
