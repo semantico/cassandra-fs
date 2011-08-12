@@ -1,6 +1,7 @@
 package org.apache.cassandra.contrib.fs;
 
 import java.io.IOException;
+
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -14,7 +15,6 @@ import org.apache.cassandra.contrib.fs.util.Bytes;
 import org.apache.log4j.Logger;
 import org.apache.thrift.transport.TTransportException;
 import org.xerial.snappy.Snappy;
-import org.xerial.snappy.SnappyInputStream;
 
 /**
  * The path here must be absolute, the relative path is handled by FSCliMain

@@ -21,7 +21,10 @@ public class CFileInputStream extends InputStream {
 		this.path = path;
 		this.facade = facade;
 		byte[] bytes = facade.get(path, FSConstants.DefaultFileCF + ":" + FSConstants.ContentAttr);
-		this.curBlockStream = new ByteArrayInputStream(Snappy.uncompress(bytes));
+		if(Snappy.isValidCompressedBuffer(bytes)) {
+			bytes = Snappy.uncompress(bytes);
+		}
+		this.curBlockStream = new ByteArrayInputStream(bytes);
 		this.blockIndex++;
 
 	}
@@ -46,7 +49,10 @@ public class CFileInputStream extends InputStream {
 		try {
 
 			byte[] bytes = facade.get(path + "_$" + blockIndex++,FSConstants.DefaultFileCF + ":" + FSConstants.ContentAttr);
-			curBlockStream = new ByteArrayInputStream(Snappy.uncompress(bytes));
+			if(Snappy.isValidCompressedBuffer(bytes)) {
+				bytes = Snappy.uncompress(bytes);
+			}
+			curBlockStream = new ByteArrayInputStream(bytes);
 			return curBlockStream.read(buffer, offset, length);
 
 		} catch (IOException e) {
