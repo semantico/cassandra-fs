@@ -13,6 +13,8 @@ import java.util.Map;
 import org.apache.cassandra.contrib.fs.util.Bytes;
 import org.apache.log4j.Logger;
 import org.apache.thrift.transport.TTransportException;
+import org.xerial.snappy.Snappy;
+import org.xerial.snappy.SnappyInputStream;
 
 /**
  * The path here must be absolute, the relative path is handled by FSCliMain
@@ -115,7 +117,7 @@ public class CassandraFileSystem implements IFileSystem {
 		while (true) {
 			int count = 0;
 			int remaining = buffer.length;
-			while(true) {
+			while(true) { //fill the buffer!
 				num = in.read(buffer, count, remaining);
 				if (remaining == 0 || num == -1) {
 					break;
@@ -123,22 +125,17 @@ public class CassandraFileSystem implements IFileSystem {
 				count+= num;
 				remaining-= num;
 			}
-			
-			byte[] content;
-			if(count != buffer.length) {
-				content = new byte[count];
-				System.arraycopy(buffer, 0, content, 0, count);
-			} else {
-				content = buffer;
-			}
-			
+			byte[] content = new byte[count];
+			System.arraycopy(buffer, 0, content, 0, count);
+			byte[] compress = Snappy.compress(content);
+
 			length += count;
 			if (index == 0) {
 				facade.put(path, FSConstants.DefaultFileCF + ":"
-						+ FSConstants.ContentAttr, content);
+						+ FSConstants.ContentAttr, compress);
 			} else {
 				facade.put(path + "_$" + index, FSConstants.DefaultFileCF + ":"
-						+ FSConstants.ContentAttr, content);
+						+ FSConstants.ContentAttr, compress);
 			}
 			index++;
 			if (num == -1) {

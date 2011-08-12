@@ -11,9 +11,7 @@ import me.prettyprint.hector.api.ddl.ColumnType;
 import me.prettyprint.hector.api.ddl.ComparatorType;
 import me.prettyprint.hector.api.ddl.KeyspaceDefinition;
 import me.prettyprint.hector.api.factory.HFactory;
-
-import org.apache.cassandra.contrib.fs.CassandraFacade;
-import org.apache.cassandra.contrib.fs.FSConstants;
+import org.apache.cassandra.contrib.fs.*;
 import org.junit.*;
 
 import static org.junit.Assert.*;
@@ -87,7 +85,6 @@ public class CassandraFacadeSetupTest extends AbstractCassandraFsTest {
 	
 	private void setupPartialKeyspace() {
 		List<ColumnFamilyDefinition> cfDefs = new ArrayList<ColumnFamilyDefinition>();
-
 		{//FILE COLUMN FAMILY
 			ColumnFamilyDefinition fileCfDef = HFactory.createColumnFamilyDefinition(conf.getKeyspace(), FSConstants.DefaultFileCF, ComparatorType.BYTESTYPE);
 			cfDefs.add(fileCfDef);

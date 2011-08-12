@@ -59,7 +59,9 @@ public class FSConstants {
 
 	// size limitation
 	public final static int MaxFileSize = 1024 * 1024 * 1024 * 1024;
-	public final static int BlockSize = 1 * 1024 * 1024;
+
+	public final static int BlockSize = 1024*1024; //1mb
+
 
 	
 }
