@@ -3,6 +3,7 @@ package org.apache.cassandra.contrib.fs.site;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
@@ -66,8 +67,13 @@ public abstract class AbstractCassandraFsView extends AbstractView {
 			writer.write(StringEscapeUtils.escapeXml(ex.getErrorCode()));
 			writer.write("</Code>\n");
 			writer.write("<Message>\n");
-			writer.write(StringEscapeUtils.escapeXml(ex.getMessage())); 
+			String message = ex.getMessage() + "";
+			message = StringEscapeUtils.escapeXml(message);
+			writer.write(message); 
 			writer.write("</Message>\n");
+			writer.write("<StackTrace>");
+			ex.printStackTrace(new PrintWriter(writer));
+			writer.write("</StackTrace>");
 			writer.write("</Error>");
 		}
 		catch (IOException e) {

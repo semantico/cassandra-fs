@@ -51,8 +51,8 @@ public class CassandraFileSystem implements IFileSystem {
 	}
 
 	private CassandraFileSystem(Configuration conf) throws TTransportException, IOException {
-		this.facade = CassandraFacade.getInstance(conf);
-		buffer = new byte[conf.getBlockSize()];
+		this.facade = CassandraFacade.getInstance(conf); //will initialize conf if its null
+		buffer = new byte[facade.getConf().getBlockSize()];
 		if (!existDir("/")) {
 			mkdir("/");
 		}
