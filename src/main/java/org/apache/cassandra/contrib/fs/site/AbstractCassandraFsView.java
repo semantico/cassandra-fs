@@ -61,6 +61,7 @@ public abstract class AbstractCassandraFsView extends AbstractView {
 		resp.setContentType("text/xml");
 		OutputStreamWriter writer = null;
 		try {
+			//System.out.print("Line Sperator:" + System.getProperty("line.separator"));
 			writer = new OutputStreamWriter(resp.getOutputStream());
 			writer.write("<Error>\n");
 			writer.write("<Code>\n");

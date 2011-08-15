@@ -21,13 +21,10 @@ public class FSConstants {
 	public final static String BlockSizeKey = "cassandra.client.blockSize";
 	
 	//cluster setup (should be consistent across nodes)
-	public final static String ClusterName = "cassandra.cluster.name";
-	public final static String KeySpace = "cassandra.cluster.keyspace";
-	/* shouldnt need to change
-	public final static String FolderCF = "cassandra.cluster.folderCF"; 
-	public final static String FileCF = "cassandra.cluster.fileCF"; 
-	public final static String FolderFlag = "cassandra.cluster.folderFlag"; 
-	*/
+	public final static String ClusterNameKey = "cassandra.cluster.name";
+	public final static String KeySpaceKey = "cassandra.cluster.keyspace";
+
+	
 	// -------------Defaults------------------
 	// cluster setup
 	public final static String DefaultHosts = "localhost:9160";
@@ -39,10 +36,10 @@ public class FSConstants {
 	// client setup
 	public final static String DefaultReplicaPlacementStrategy = "org.apache.cassandra.locator.SimpleStrategy";
 	public final static int DefaultReplicationFactor = 1;
-	public final static int DefaultMaxActive = 10;
-	public final static int DefaultMaxIdle = 10;
-	public final static int DefaultMaxWaitTimeWhenExhausted = 60 * 1000;
-	public final static int DefaultCassandraThriftSocketTimeout = 60 * 1000;
+	public final static int DefaultMaxActive = 5;
+	public final static int DefaultMaxIdle = 5;
+	public final static int DefaultMaxWaitTimeWhenExhausted = 2 * 1000;
+	public final static int DefaultCassandraThriftSocketTimeout = 5 * 1000;
 
 	
 	// attribute

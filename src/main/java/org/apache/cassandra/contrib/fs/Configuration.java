@@ -111,7 +111,7 @@ public class Configuration {
 	}
 	
 	public String getClusterName() {
-		String clusterName = properties.getProperty(FSConstants.ClusterName);
+		String clusterName = properties.getProperty(FSConstants.ClusterNameKey);
 		if(clusterName == null) {
 			return FSConstants.DefaultClusterName;
 		} else {
@@ -120,7 +120,7 @@ public class Configuration {
 	}
 	
 	public String getKeyspace() {
-		String keyspace = properties.getProperty(FSConstants.KeySpace);
+		String keyspace = properties.getProperty(FSConstants.KeySpaceKey);
 		if(keyspace == null) {
 			return FSConstants.DefaultKeySpace;
 		} else {

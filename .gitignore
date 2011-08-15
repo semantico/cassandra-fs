@@ -4,3 +4,5 @@
 conf/.svn
 target
 tmp
+src/test/resources/bigDataFile.dat
+src/test/java/com/semantico/cassandra/fs/tests/StressTest.java

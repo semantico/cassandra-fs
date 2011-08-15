@@ -20,16 +20,16 @@ public abstract class AbstractCassandraFsTest extends CassandraTest {
 
 	protected IFileSystem fs;
 	protected Configuration conf;
+	protected Properties properties;
 	 
 	@Before
 	public void setUpFS() throws IOException, TTransportException {
-		Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+		//Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 		cleanPrebuiltKeyspace();
-		Properties properties = new Properties();
-		//TODO: is the right path or is a location maven copies them to for testing ?
+		properties = new Properties();
 		properties.load(new FileInputStream(new File("src/test/resources/config.properties")));
-		properties.setProperty(FSConstants.KeySpace, keyspace.getKeyspaceName());
-		properties.setProperty(FSConstants.ClusterName, cluster.describeClusterName());
+		properties.setProperty(FSConstants.KeySpaceKey, keyspace.getKeyspaceName());
+		properties.setProperty(FSConstants.ClusterNameKey, cluster.describeClusterName());
 		properties.setProperty(FSConstants.HostsKey, "localhost:19160");
 		conf = new Configuration(properties);
 		fs = CassandraFileSystem.getInstance(conf);
@@ -37,7 +37,7 @@ public abstract class AbstractCassandraFsTest extends CassandraTest {
 		
 	}
 	
-	protected void cleanPrebuiltKeyspace() throws FileNotFoundException, IOException {
+	protected void cleanPrebuiltKeyspace() {
 		cluster.dropKeyspace(keyspace.getKeyspaceName());
 		CassandraFileSystem.dropInstance();//make sure we get a fresh copy
 		CassandraFacade.dropInstance();

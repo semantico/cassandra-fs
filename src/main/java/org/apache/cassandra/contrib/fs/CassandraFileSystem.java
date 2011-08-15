@@ -98,6 +98,8 @@ public class CassandraFileSystem implements IFileSystem {
 				facade.put(path + "_$" + index, FSConstants.DefaultFileCF + ":"
 						+ FSConstants.ContentAttr, compress);
 			}
+			//ping to force write
+			facade.exist(path + "_$" + index);
 			index++;
 			if (num == -1) {
 				break;
@@ -122,6 +124,8 @@ public class CassandraFileSystem implements IFileSystem {
 		map.put(Bytes.toBytes(FSConstants.GroupAttr), FSConstants.DefaultGroup);
 
 		facade.batchPut(parent, FSConstants.DefaultFolderCF, path, map, true);
+		
+		
 	}
 
 	public boolean deleteFile(String path) throws IOException {

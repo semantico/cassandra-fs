@@ -48,7 +48,7 @@ public class ConfigurationTest {
 		String replicaStrategyClass = "some.class";
 		int replicationFactor = 3;
 		String keyspace = "ksp";
-		customProperties.put(FSConstants.ClusterName, clusterName);
+		customProperties.put(FSConstants.ClusterNameKey, clusterName);
 		customProperties.put(FSConstants.HostsKey, hosts);
 		customProperties.put(FSConstants.MaxActiveKey, maxActive+"");
 		customProperties.put(FSConstants.MaxIdleKey, maxIdle+"");
@@ -56,7 +56,7 @@ public class ConfigurationTest {
 		customProperties.put(FSConstants.CassandraThriftSocketTimeoutKey, thriftSocketTimeout+"");
 		customProperties.put(FSConstants.ReplicaStrategyClassKey, replicaStrategyClass);
 		customProperties.put(FSConstants.ReplicationFactorKey, replicationFactor+"");
-		customProperties.put(FSConstants.KeySpace, keyspace);
+		customProperties.put(FSConstants.KeySpaceKey, keyspace);
 		Configuration config = new Configuration(customProperties);
 		assertEquals(clusterName, config.getClusterName());
 		assertEquals(hosts, config.getHosts());

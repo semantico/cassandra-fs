@@ -55,4 +55,36 @@ public class CassandraFsController {
 		String action = request.getParameter("action");
 		return action == null ? "" : action;
 	}
+
+	public ListView getListView() {
+		return listView;
+	}
+
+	public void setListView(ListView listView) {
+		this.listView = listView;
+	}
+
+	public GetFileView getGetFileView() {
+		return getFileView;
+	}
+
+	public void setGetFileView(GetFileView getFileView) {
+		this.getFileView = getFileView;
+	}
+
+	public PutFileView getPutFileView() {
+		return putFileView;
+	}
+
+	public void setPutFileView(PutFileView putFileView) {
+		this.putFileView = putFileView;
+	}
+
+	public DeleteView getDeleteView() {
+		return deleteView;
+	}
+
+	public void setDeleteView(DeleteView deleteView) {
+		this.deleteView = deleteView;
+	}
 }
