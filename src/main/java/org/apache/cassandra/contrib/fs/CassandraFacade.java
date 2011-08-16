@@ -45,6 +45,7 @@ public class CassandraFacade {
 						if(configLocation == null) {
 						config = CassandraFacade.class.getClassLoader().getResource("config.properties");
 						} else {
+							//weirdly sensitive to the number of / after file:
 							config = new URL("file:////" +System.getProperty("user.dir")+ File.separator+ configLocation+File.separator+ "config.properties");
 						}
 						File clientConfFile = null;
@@ -78,8 +79,27 @@ public class CassandraFacade {
 	private CassandraFacade(Configuration conf) throws IOException {
 		this.conf = conf;
 		CassandraHostConfigurator hostConf = new CassandraHostConfigurator(conf.getHosts());
-		hostConf.setMaxActive(conf.getMaxActive());
-		hostConf.setMaxIdle(conf.getMaxIdle());
+		if(conf.getBufferedMemoryLimit() != -1) {
+			if(conf.isSetMaxActive() || conf.isSetMaxIdle()) {
+				LOGGER.warn("Both max active/idle and memory limit configurations have been set. Memory limit is being used, max active/idle will be ignored");
+			}
+			int numHosts = conf.getBufferedMemoryLimit()/conf.getBlockSize();
+			if(numHosts < 1) {
+				numHosts = 1;
+				LOGGER.warn("Buffer Memory Limit set too low, increase limit or decrease block size. potential OOM errors");
+			}
+			hostConf.setMaxActive(numHosts);
+			hostConf.setMaxIdle((numHosts+1)/2);
+		} else {
+			if(conf.getMaxActive() < 1) {
+				throw new IOException("Max Active cannot be set below 1");
+			} else {
+				hostConf.setMaxActive(conf.getMaxActive());
+			}
+			hostConf.setMaxIdle(conf.getMaxIdle());
+			
+		}
+		
 		hostConf.setMaxWaitTimeWhenExhausted(conf.getMaxWaitTimeWhenExhausted());
 		hostConf.setCassandraThriftSocketTimeout(conf.getCassandraThriftSocketTimeout());
 		cluster = HFactory.getOrCreateCluster(conf.getClusterName(), hostConf);

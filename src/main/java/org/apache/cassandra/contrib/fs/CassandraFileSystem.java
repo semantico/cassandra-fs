@@ -65,6 +65,11 @@ public class CassandraFileSystem implements IFileSystem {
 	public void createFile(String path, InputStream in) throws IOException {
 		PathUtil.checkPath(path);
 		path = PathUtil.normalizePath(path);
+		if(existDir(path)) {
+			throw new IOException("A folder with this name already exists");
+		} else if(existFile(path)){
+			deleteFile(path);
+		}
 		String parent = PathUtil.getParent(path);
 		if (!existDir(parent)) {
 			mkdir(parent);

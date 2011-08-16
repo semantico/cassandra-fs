@@ -19,7 +19,7 @@ public class FSConstants {
 	public final static String ReplicaStrategyClassKey = "cassandra.client.replicaPlacementStrategy"; 
 	public final static String ReplicationFactorKey = "cassandra.client.replicationFactor";
 	public final static String BlockSizeKey = "cassandra.client.blockSize";
-	
+	public final static String BufferLimitKey = "cassandra.client.bufferLimit";
 	//cluster setup (should be consistent across nodes)
 	public final static String ClusterNameKey = "cassandra.cluster.name";
 	public final static String KeySpaceKey = "cassandra.cluster.keyspace";
