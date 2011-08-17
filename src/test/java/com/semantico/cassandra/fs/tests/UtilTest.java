@@ -126,7 +126,9 @@ public class UtilTest {
 		char[] i = {'a', 'b', 'c'};
 		byte[] bytes = Bytes.toBytes(i);
 		char[] result = Bytes.toChars(bytes);
-		assertEquals(i, result);
+		for(int j = 0 ; j < 3; j++) {
+			assertEquals(i[j], result[j]);
+		}
 	}
 	
 	@Test
