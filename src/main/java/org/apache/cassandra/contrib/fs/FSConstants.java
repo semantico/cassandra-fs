@@ -4,7 +4,6 @@ import org.apache.cassandra.contrib.fs.util.Bytes;
 
 /**
  * This class has a mix of actual constants and values that can overwitten by Configuration
- * TODO: needs som refactoring to remove defaults from Configuration and put them here
  */
 public class FSConstants {
 	// ----------Property Keys---------------
@@ -57,7 +56,7 @@ public class FSConstants {
 	public final static byte[] DefaultGroup = Bytes.toBytes("supergroup");
 
 	// size limitation
-	public final static int MaxFileSize = 1024 * 1024 * 1024 * 1024;
+	public final static int MaxFileSize = 1024 * 1024 * 1024 * 1024; //1TB
 
 	public final static int DefaultBlockSize = 1024*1024; //1mb
 

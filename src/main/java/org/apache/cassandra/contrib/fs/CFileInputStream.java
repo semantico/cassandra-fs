@@ -7,6 +7,13 @@ import java.io.InputStream;
 import org.apache.cassandra.thrift.NotFoundException;
 import org.xerial.snappy.Snappy;
 
+/**
+ * An input stream that reads a file from cassandraFS.
+ * It will request one block at a time, uncompress it and serve it up, delegating read methods to a
+ * ByteArrayInputStream.
+ * @author zhanje, Edd King
+ *
+ */
 public class CFileInputStream extends InputStream {
 
 	private InputStream curBlockStream;
@@ -17,6 +24,12 @@ public class CFileInputStream extends InputStream {
 
 	private CassandraFacade facade;
 
+	/**
+	 * Makes a new input stream to the file spacified by path, using the connection given by facade
+	 * @param path path to the file to open
+	 * @param facade connection to cassandra to use
+	 * @throws IOException
+	 */
 	public CFileInputStream(String path, CassandraFacade facade) throws IOException {
 		this.path = path;
 		this.facade = facade;
@@ -26,7 +39,6 @@ public class CFileInputStream extends InputStream {
 		}
 		this.curBlockStream = new ByteArrayInputStream(bytes);
 		this.blockIndex++;
-
 	}
 
 	@Override
@@ -61,7 +73,5 @@ public class CFileInputStream extends InputStream {
 			}
 			throw e;
 		}
-
 	}
-
 }

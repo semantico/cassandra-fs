@@ -30,11 +30,29 @@ import me.prettyprint.hector.api.query.SliceQuery;
 import me.prettyprint.hector.api.query.SubColumnQuery;
 import me.prettyprint.hector.api.query.SuperSliceQuery;
 
+/**
+ * CassandraFacade is a singleton that encapulates access to the cassandra database.
+ * It will attempt to configure access to the database from a provided Configuration object or 
+ * look in the directory specified by the system property 'storage-config' if none is provided,
+ * as a last resort it will scan the user directory for the file. Configuration files must be
+ * named 'config.properties'. A runtime exception will occour if a configuration is not supplied
+ * See the supplied configuration file for further information on configuration
+ * @author Edd King
+ *
+ */
 public class CassandraFacade {
 
 	private static Logger LOGGER = Logger.getLogger(CassandraFacade.class);
 	private static CassandraFacade instance;
 
+	/**
+	 * Gets the instance of this singleton class.
+	 * Creates a new instance with the configuration provided if no instance currently exists.
+	 * Note: singletons are not shared between class loaders. 
+	 * @param conf a configuration object to use
+	 * @return The singleton instance of CassandraFacade
+	 * @throws IOException when an error occours while reading a configuration file
+	 */
 	public static CassandraFacade getInstance(Configuration conf) throws IOException {
 		if (instance == null) {
 			synchronized (CassandraFacade.class) {
@@ -66,6 +84,13 @@ public class CassandraFacade {
 		return instance;
 	}
 
+	/**
+	 * <b>This Method breaks the singleton pattern.
+	 * </b>
+	 * When next an instance of the Facade is requested, a new one will be created. This method should only be used if for some
+	 * reason you need to re-configure. It is the responsibility of the user to manage references to other instances of the facade,
+	 * (The CassandraFileSystem singleton must be dropped too)
+	 */
 	public static void dropInstance() {
 		instance = null;
 	}
@@ -83,21 +108,17 @@ public class CassandraFacade {
 			if(conf.isSetMaxActive() || conf.isSetMaxIdle()) {
 				LOGGER.warn("Both max active/idle and memory limit configurations have been set. Memory limit is being used, max active/idle will be ignored");
 			}
-			int numHosts = conf.getBufferedMemoryLimit()/conf.getBlockSize();
-			if(numHosts < 1) {
-				numHosts = 1;
-				LOGGER.warn("Buffer Memory Limit set too low, increase limit or decrease block size. potential OOM errors");
-			}
-			hostConf.setMaxActive(numHosts);
-			hostConf.setMaxIdle((numHosts+1)/2);
+			conf.setMaxActiveFromMemoryLimit();
+			conf.setMaxIdleFromMaxActive();
+			hostConf.setMaxActive(conf.getMaxActive());
+			hostConf.setMaxIdle(conf.getMaxIdle());
 		} else {
 			if(conf.getMaxActive() < 1) {
 				throw new IOException("Max Active cannot be set below 1");
-			} else {
-				hostConf.setMaxActive(conf.getMaxActive());
 			}
+			hostConf.setMaxActive(conf.getMaxActive());
 			hostConf.setMaxIdle(conf.getMaxIdle());
-			
+			conf.setMemoryLimitFromMaxActive();
 		}
 		
 		hostConf.setMaxWaitTimeWhenExhausted(conf.getMaxWaitTimeWhenExhausted());
@@ -140,6 +161,10 @@ public class CassandraFacade {
 		ksp = HFactory.createKeyspace(conf.getKeyspace(), cluster);
 	}
 
+	/**
+	 * Gets the configuration object used by this facade
+	 * @return the configuration object used by this facade
+	 */
 	public Configuration getConf() {
 		return conf;
 	}
@@ -160,6 +185,13 @@ public class CassandraFacade {
 		return columnPath;
 	}
 
+	/**
+	 * Puts bytes into the specified key & column.
+	 * @param key The key to add the column to
+	 * @param column the path to the column e.g. ColumnFamily:SuperColumn:SubColumn or ColumnFamily:Column
+	 * @param value the bytes to put in the column
+	 * @throws IOException if any error occours while attempting to perform this action
+	 */
 	public void put(String key, String column, byte[] value) throws IOException {
 		LOGGER.trace("Hitting put");
 		try {
@@ -187,10 +219,22 @@ public class CassandraFacade {
 		} 
 	}
 
+	/**
+	 * Puts multiple columns into the database asynchronously.
+	 * Column name-value pairs are supplied by the key-value pairs in the map parameter.
+	 * In the case where isSuperColumn is true, the columns are inserted into a supercolumn with the given
+	 * name (colName) under the given key. Where isSuperColumn is false, the colName parameter is ignored and the columns are 
+	 * inserted into the column family under the given key as normal.
+	 * @param key The key to put the columns under
+	 * @param cfName The column family to put into
+	 * @param colName The name of the supercolumn to insert into
+	 * @param map a set of column name / value pairs to insert
+	 * @param isSuperColumn if the colName parameter should be used to put these values into a supercolumn
+	 * @throws IOException if any error occours while attempting to perform this action
+	 */
 	public void batchPut(String key, String cfName, String colName, Map<byte[], byte[]> map, boolean isSuperColumn) throws IOException {
 		LOGGER.trace("Hitting batchPut");
 		try {
-			//Keyspace ks = HFactory.createKeyspace(conf.getKeyspace(), cluster);
 			Mutator<String> mutator = HFactory.createMutator(ksp, stringSerializer);
 
 			if (!isSuperColumn) {
@@ -212,16 +256,21 @@ public class CassandraFacade {
 				HSuperColumn<String , String, byte[]> superCol = HFactory.createSuperColumn(colName, cols, stringSerializer, stringSerializer, byteSerializer);
 				mutator.addInsertion(key, cfName, superCol);
 			}
-
-			//ks.batchInsert(key, cfMap, superCFMap);
 			mutator.execute();
 		} catch (Exception e) {
 			throw new IOException(e);
 		} 
 	}
 
+	/**
+	 * Gets the bytes stored at the given key / column path.
+	 * @param key the key to look under
+	 * @param column the column path to look under e.g. ColumnFamily:SuperColumn:SubColumn or ColumnFamily:Column
+	 * @return the bytes stored at this location
+	 * @throws IOException if any error occours while attempting to perform this action. (NotFoundException will be the cause of this exception if the columnpath/key dosen't exist)
+	 */
 	public byte[] get(String key, String column) throws IOException {
-		System.out.println("Hitting Get: Key:" + key + "  ColumnPath:"  + column);
+		LOGGER.trace("Hitting Get: Key:" + key + "  ColumnPath:"  + column);
 		try {
 			ColumnPath columnPath = extractColumnPath(column);
 			if (columnPath.isSetSuper_column() && columnPath.isSetColumn()){
@@ -256,6 +305,11 @@ public class CassandraFacade {
 		throw new IllegalArgumentException("Cannot Query without a column");
 	}
 
+	/**
+	 * Deletes all columns under the given key in both the file and folder column families.
+	 * @param key the key to delete
+	 * @throws IOException if any error occours while attempting to perform this action.
+	 */
 	public void delete(String key) throws IOException {
 		try {
 			Mutator<String> mutator = HFactory.createMutator(ksp, stringSerializer);
@@ -267,6 +321,13 @@ public class CassandraFacade {
 		}
 	}
 
+	/**
+	 * Deletes the supercolumn in the given column family & key location.
+	 * @param key the key to look under for the supercolumn
+	 * @param columnFamily the column family
+	 * @param superColumn the name of the supercolumn to delete
+	 * @throws IOException if any error occours while attempting to perform this action
+	 */
 	public void delete(String key, String columnFamily, String superColumn) throws IOException {
 		try {
 			Mutator<String> mutator = HFactory.createMutator(ksp, stringSerializer);
@@ -277,9 +338,15 @@ public class CassandraFacade {
 		} 
 	}
 
+	/**
+	 * Queries whether there are any files or folders with the given name
+	 * @param key the file path e.g. /myFolder/example.txt or /myFolder/example.txt_$1 etc..
+	 * @return whether somthing exists at this location
+	 * @throws IOException if any error occours while attempting to perform this action
+	 */
 	public boolean exist(String key) throws IOException {
 		try {
-
+			//TODO: not sure this method works as i think, needs more testing!
 			SubColumnQuery<String, String, String, byte[]> query = HFactory.createSubColumnQuery(ksp, stringSerializer, stringSerializer, stringSerializer, byteSerializer);
 			query.setColumnFamily(FSConstants.DefaultFolderCF);
 			query.setSuperColumn(FSConstants.DefaultFolderFlag);
@@ -314,7 +381,20 @@ public class CassandraFacade {
 		return false;
 	}
 
-
+	/**
+	 * Lists Path objects containing data about the specified folder or file.
+	 * Each file or folder found in the given location (key) is returned as a Path object, the path object
+	 * will also contain all the metadata associated with that object e.g. compressed size.
+	 * If the folder column family is queried, then the immediate contents (not recursive) of the specified
+	 * folder is returned, then if the includeFolderFlag parameter is set to true, it will also return a
+	 * path for the folder flag column (default is '$_Folder_$') which contains metadata for that folder.
+	 * If the file column family is queried then at most one Path object will be returned
+	 * @param key the path and name of this file or folder
+	 * @param columnFamily the column family to look under (only 'Folder' or 'File' currently supported)
+	 * @param includeFolderFlag whether folder metadata should be included
+	 * @return a list of paths containing metadata about the contents of this file or folder
+	 * @throws IOException if any error occours while attempting to perform this action
+	 */
 	public List<Path> list(String key, String columnFamily, boolean includeFolderFlag) throws IOException {
 		try {
 			List<Path> children = new ArrayList<Path>();
@@ -355,6 +435,14 @@ public class CassandraFacade {
 		} 
 	}
 
+	/**
+	 * Returns a Path object containing the metadata about a file in the given location.
+	 * Queries the FileCF for metadata about the given file. method: list provides the same functionality
+	 * when used for only the FileColumn family
+	 * @param file the path and name of the file to query
+	 * @return path containing the requested metadata
+	 * @throws IOException if any error occours while attempting to perform this action
+	 */
 	public Path listFile(String file) throws IOException {
 		try {
 			SliceQuery<String, String, byte[]> query = HFactory.createSliceQuery(ksp, stringSerializer, stringSerializer, byteSerializer);

@@ -5,6 +5,11 @@ import me.prettyprint.hector.api.beans.HColumn;
 
 import org.apache.cassandra.contrib.fs.util.Bytes;
 
+/**
+ * Represents a path to a file or folder in cassandraFS and also contains meta-data about that file
+ * @author zhanje, Edd King
+ * 
+ */
 public class Path {
 
 	// This value only will be used in cli for formatting
@@ -18,10 +23,19 @@ public class Path {
 	private String owner;
 	private String group;
 	
+	/**
+	 * Make a new Path to a file without any metadata
+	 * @param url the url to the file
+	 */
 	public Path(String url) {
 		this(url, false);
 	}
 
+	/**
+	 * Makes a new path to a file or directory without any metadata
+	 * @param url the url to the file or folder
+	 * @param isDir if this is a folder or not
+	 */
 	public Path(String url, boolean isDir) {
 		this.url = url;
 		this.name = getNameFromURL(url);
@@ -37,6 +51,11 @@ public class Path {
 		}
 	}
 
+	/**
+	 * Makes a new Path given its url and metadata about that file as returned by a query to CassandraFS
+	 * @param url the url to the file or folder
+	 * @param attributes meta data about this file
+	 */
 	public Path(String url, List<HColumn<String, byte[]>> attributes) {
 		this.url = url;
 		this.name = getNameFromURL(url);
@@ -63,10 +82,18 @@ public class Path {
 		}
 	}
 
+	/**
+	 * 
+	 * @return if this is a directory (folder) or not
+	 */
 	public boolean isDir() {
 		return this.isDir;
 	}
 
+	/**
+	 * 
+	 * @return the url path to this file
+	 */
 	public String getURL() {
 		return this.url;
 	}
@@ -83,14 +110,26 @@ public class Path {
 		return builder.toString();
 	}
 
+	/**
+	 * 
+	 * @return the name of this file or folder
+	 */
 	public String getName() {
 		return this.name;
 	}
 
+	/**
+	 * 
+	 * @return the length in bytes of this file before it was stored in the file system
+	 */
 	public long getLength() {
 		return this.length;
 	}
 	
+	/**
+	 * 
+	 * @return the length in bytes of this file once it had been compressed and stored
+	 */
 	public long getCompressedLength() {
 		return compressedLength;
 	}

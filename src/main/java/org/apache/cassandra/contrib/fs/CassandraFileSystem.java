@@ -17,24 +17,26 @@ import org.apache.thrift.transport.TTransportException;
 import org.xerial.snappy.Snappy;
 
 /**
- * The path here must be absolute, the relative path is handled by FSCliMain
  * 
- * @author zhanje
+ * @author zhanje, Edd King
  * 
  */
 public class CassandraFileSystem implements IFileSystem {
 
 	private static Logger LOGGER = Logger.getLogger(CassandraFileSystem.class);
-
-	private static SimpleDateFormat format = new SimpleDateFormat(
-			"yyyy/MM/dd hh:mm");
-
+	private static SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd hh:mm");
 	private static IFileSystem instance;
 
-	private CassandraFacade facade;
-
-	private byte[] buffer;
-
+	/**
+	 * Gets the instance of this singleton class.
+	 * Creates a new instance with the configuration provided if no instance currently exists.
+	 *
+	 * Note: singletons are not shared between class loaders. 
+	 * @param conf a configuration object to use
+	 * @return the CassandraFileSystem instance
+	 * @throws TTransportException if there is a problem connecting to the database through thrift
+	 * @throws IOException if there is any other IO problem, e.g. reading the configuration file
+	 */
 	public static IFileSystem getInstance(Configuration conf) throws TTransportException, IOException {
 		if (instance == null) {
 			synchronized (CassandraFileSystem.class) {
@@ -46,10 +48,21 @@ public class CassandraFileSystem implements IFileSystem {
 		return instance;
 	}
 
+	/**
+	 * <b>This Method breaks the singleton pattern.
+	 * </b>
+	 * When next an instance of the FileSystem is requested, a new one will be created. This method should only be used if for some
+	 * reason you need to re-configure. It is the responsibility of the user to manage references to other instances of the file system,
+	 * (The CassandraFacade singleton must be dropped too)
+	 */
 	public static void dropInstance() { // used for ensuring different keyspaces between tests
 		instance = null;
 	}
 
+	private CassandraFacade facade;
+	private byte[] buffer;
+	
+	
 	private CassandraFileSystem(Configuration conf) throws TTransportException, IOException {
 		this.facade = CassandraFacade.getInstance(conf); //will initialize conf if its null
 		buffer = new byte[facade.getConf().getBlockSize()];
@@ -144,7 +157,7 @@ public class CassandraFileSystem implements IFileSystem {
 		String parent = PathUtil.getParent(path);
 		facade.delete(path);
 		for (int i = 1; facade.exist(path + "_$" + i); ++i) {
-			facade.delete(path + "_$" + i); //TODO: ------------------CODE COVER HERE IS CRAP ? WHAT IS HAPPENING ?!
+			facade.delete(path + "_$" + i); //TODO: ------------------CODE COVER HERE IS CRAP ? WHAT IS HAPPENING ?! I think facade.exist is broken
 		}
 		facade.delete(parent, FSConstants.DefaultFolderCF, path);
 		return true;
@@ -195,7 +208,7 @@ public class CassandraFileSystem implements IFileSystem {
 		PathUtil.checkPath(path);
 		path = PathUtil.normalizePath(path);
 		if (existDir(path)) {
-			LOGGER.warn("'" + path + "' is already existed");
+			LOGGER.warn("'" + path + "' already exists");
 			return false;
 		}
 		String parent = PathUtil.getParent(path);
@@ -232,17 +245,7 @@ public class CassandraFileSystem implements IFileSystem {
 			result = facade.list(path, FSConstants.DefaultFolderCF, false);
 		} else if (existFile(path)) {
 			result = facade.list(path, FSConstants.DefaultFileCF, false);
-		} else {
-			return result;
 		}
-		// set the max size length, the max size length is for cli formatting
-		int max = 0;
-		for (Path child : result) {
-			if ((child.getLength() + "").length() > max) {
-				max = (child.getLength() + "").length();
-			}
-		}
-		Path.MaxSizeLength = max;
 		return result;
 	}
 
