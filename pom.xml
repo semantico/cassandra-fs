@@ -133,7 +133,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.semantico.sipp2</groupId>
-			<artifactId>embedded-cassandra-utils</artifactId>
+			<artifactId>cassandra-utils</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
