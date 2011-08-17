@@ -21,7 +21,7 @@ public abstract class AbstractCassandraFsView extends AbstractView {
 		try {
 			handleRequest(request, response);
 		} catch (Exception e) {
-			writeException(response, new CfsSiteException(e.getClass().getName(),e.getMessage()));
+			writeException(response, e);
 		} finally {
 			response.getOutputStream().flush();
 		}
@@ -57,7 +57,7 @@ public abstract class AbstractCassandraFsView extends AbstractView {
 		}
 	}
 	
-	protected void writeException(HttpServletResponse resp, CfsSiteException ex) {
+	protected void writeException(HttpServletResponse resp, Exception ex) {
 		resp.setContentType("text/xml");
 		OutputStreamWriter writer = null;
 		try {
@@ -65,7 +65,7 @@ public abstract class AbstractCassandraFsView extends AbstractView {
 			writer = new OutputStreamWriter(resp.getOutputStream());
 			writer.write("<Error>\n");
 			writer.write("<Code>\n");
-			writer.write(StringEscapeUtils.escapeXml(ex.getErrorCode()));
+			writer.write(StringEscapeUtils.escapeXml(ex.getClass().getName()));
 			writer.write("</Code>\n");
 			writer.write("<Message>\n");
 			String message = ex.getMessage() + "";

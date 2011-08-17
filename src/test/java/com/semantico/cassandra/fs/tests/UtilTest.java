@@ -82,6 +82,70 @@ public class UtilTest {
 	}
 	
 	@Test
+	public void floatToByteTest() {
+		float f = 0.233567f;
+		byte[] bytes = Bytes.toBytes(f);
+		float result = Bytes.toFloat(bytes);
+		assertEquals(f, result, 0.000001f);
+	}
+	
+	@Test
+	public void doubleToByteTest() {
+		double d = 0.233567f;
+		byte[] bytes = Bytes.toBytes(d);
+		double result = Bytes.toDouble(bytes);
+		assertEquals(d, result, 0.000001f);
+	}
+	
+	@Test
+	public void intToByteTest() {
+		int i = 124;
+		byte[] bytes = Bytes.toBytes(i);
+		int result = Bytes.toInt(bytes);
+		assertEquals(i, result);
+	}
+	
+	@Test
+	public void shortToByteTest() {
+		short i = 124;
+		byte[] bytes = Bytes.toBytes(i);
+		short result = Bytes.toShort(bytes);
+		assertEquals(i, result);
+	}
+	
+	@Test
+	public void charToByteTest() {
+		char i = 'i';
+		byte[] bytes = Bytes.toBytes(i);
+		char result = Bytes.toChar(bytes);
+		assertEquals(i, result);
+	}
+	
+	@Test
+	public void charArrayToByteTest() {
+		char[] i = {'a', 'b', 'c'};
+		byte[] bytes = Bytes.toBytes(i);
+		char[] result = Bytes.toChars(bytes);
+		assertEquals(i, result);
+	}
+	
+	@Test
+	public void stringToByteArraysTest() {
+		String i = "blabla";
+		byte[][] bytes = Bytes.toByteArrays(i);
+		String result = Bytes.toString(bytes[0]);
+		assertEquals(i, result);
+	}
+	
+	@Test
+	public void stringsToByteArraysTest() {
+		String[] i = {"random","blabla", "random"};
+		byte[][] bytes = Bytes.toByteArrays(i);
+		String result = Bytes.toString(bytes[1]);
+		assertEquals(i[1], result);
+	}
+	
+	@Test
 	public void byteToBooleantest() {
 		byte[] input = {0};
 		boolean result = Bytes.toBoolean(input);
