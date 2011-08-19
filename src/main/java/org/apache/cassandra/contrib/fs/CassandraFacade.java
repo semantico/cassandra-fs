@@ -30,6 +30,12 @@ import me.prettyprint.hector.api.query.SliceQuery;
 import me.prettyprint.hector.api.query.SubColumnQuery;
 import me.prettyprint.hector.api.query.SuperSliceQuery;
 
+/*
+ * Notice: This file is modified from the original as provided under the apache 2.0 license
+ * Now uses a newer version of the hector api and optionally takes a configuration object
+ * whereas previously configuration was hardcoded to find a particular file.
+ * See javadoc for more information
+ */
 /**
  * CassandraFacade is a singleton that encapulates access to the cassandra database.
  * It will attempt to configure access to the database from a provided Configuration object or 

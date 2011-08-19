@@ -89,32 +89,6 @@ public abstract class AbstractCassandraFsView extends AbstractView {
 			}
 		}
 	}
-	
-	protected void writePaths(HttpServletResponse resp,String dir,List<Path> subs){
-		resp.setContentType("text/xml");
-		OutputStreamWriter writer = null;
-		try {
-			writer = new OutputStreamWriter(resp.getOutputStream());
-			writer.write("<Paths dir=\"" + dir + "\">\n");
-			for(Path sub : subs){
-				writer.write("<Path>");
-				writer.write(StringEscapeUtils.escapeXml(sub.getName()));
-				writer.write("</Path>\n");	
-			}
-			writer.write("</Paths>");		
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}finally {
-			if(writer != null) {
-				try {
-					writer.flush();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
 
 	protected String getPath(HttpServletRequest request){
 		return request.getRequestURI();

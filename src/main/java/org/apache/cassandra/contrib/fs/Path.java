@@ -4,7 +4,10 @@ import java.util.List;
 import me.prettyprint.hector.api.beans.HColumn;
 
 import org.apache.cassandra.contrib.fs.util.Bytes;
-
+/*
+ * Notice: This file is modified from the original as provided under the apache 2.0 license
+ * added compressed length meta-data
+ */
 /**
  * Represents a path to a file or folder in cassandraFS and also contains meta-data about that file
  * @author zhanje, Edd King

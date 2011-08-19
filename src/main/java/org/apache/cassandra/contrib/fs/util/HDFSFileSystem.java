@@ -1,5 +1,7 @@
 package org.apache.cassandra.contrib.fs.util;
-
+/*
+ * Notice: This file is modified from the original as provided under the apache 2.0 license
+ */
 //import java.io.IOException;
 //import java.net.URI;
 //import java.net.URISyntaxException;

@@ -15,7 +15,13 @@ import org.apache.cassandra.contrib.fs.util.Bytes;
 import org.apache.log4j.Logger;
 import org.apache.thrift.transport.TTransportException;
 import org.xerial.snappy.Snappy;
-
+/*
+ * Notice: This file is modified from the original as provided under the apache 2.0 license
+ * Files are now compressed with snappy before put into the database and the file system optionally takes
+ * a configuration object. A compressed length metadata attribute has also been added to indicate how much
+ * space the file takes up once stored. Older versions of cassandra-fs should still be compatible, but this
+ * has not been tested.
+ */
 /**
  * 
  * @author zhanje, Edd King

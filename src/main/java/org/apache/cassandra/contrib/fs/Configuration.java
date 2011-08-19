@@ -6,7 +6,10 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-
+/*
+ * Notice: This file is modified from the original as provided under the apache 2.0 license
+ * Added more configuration options to allow better control of memory usage
+ */
 /**
  * Encapsulates access to the configuration of a CassandraFileSystem
  * If the requested configuration option has not been set then then configuration object falls back on defaults

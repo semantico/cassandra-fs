@@ -1,5 +1,7 @@
 package org.apache.cassandra.contrib.fs.cli;
-
+/*
+ * Notice: This file is modified from the original as provided under the apache 2.0 license
+ */
 //import java.io.BufferedReader;
 //import java.io.File;
 //import java.io.FileInputStream;

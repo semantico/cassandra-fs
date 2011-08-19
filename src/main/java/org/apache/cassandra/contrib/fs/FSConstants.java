@@ -1,7 +1,9 @@
 package org.apache.cassandra.contrib.fs;
 
 import org.apache.cassandra.contrib.fs.util.Bytes;
-
+/*
+ * Notice: This file is modified from the original as provided under the apache 2.0 license
+ */
 /**
  * This class has a mix of actual constants and values that can overwitten by Configuration
  */

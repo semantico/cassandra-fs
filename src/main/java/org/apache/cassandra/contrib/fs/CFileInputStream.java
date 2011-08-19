@@ -6,7 +6,12 @@ import java.io.InputStream;
 
 import org.apache.cassandra.thrift.NotFoundException;
 import org.xerial.snappy.Snappy;
-
+/*
+ * Notice: This file is modified from the original as provided under the apache 2.0 license
+ * Files are decompressed (using snappy) block by block as they are read out of the database.
+ * This should still be compatible with files that werent compressed (using older versions of cassandra-fs),
+ * but this has not been tested.
+ */
 /**
  * An input stream that reads a file from cassandraFS.
  * It will request one block at a time, uncompress it and serve it up, delegating read methods to a
